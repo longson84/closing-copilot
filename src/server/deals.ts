@@ -128,9 +128,18 @@ export async function createBooking(input: BookingInput): Promise<DealDetail> {
 export async function addDocument(dealId: string, file: BookingInput['file']) {
     const { deal, customer } = await load(dealId);
     const document = await analyzeDealDocument(file, deal, customer);
-    // A clean replacement (e.g. the corrected S&P) supersedes earlier versions of the same document.
-    if (document.type !== 'OTHER' && document.checks.every((c) => c.status === 'OK')) {
-        for (const d of deal.documents) if (d.type === document.type && !d.supersededBy) d.supersededBy = document.id;
+    // A corrected replacement (e.g. the fixed S&P) supersedes an earlier version only when it re-checks,
+    // and passes, every field that was flagged before — plus, for OTP/S&P, the buyer's name and ID.
+    // A document the AI could not read (no checks) never clears anything.
+    const passed = new Set(document.checks.filter((c) => c.status === 'OK').map((c) => c.field));
+    const clean = document.checks.length > 0 && document.checks.every((c) => c.status === 'OK');
+    const identityOk = document.type !== 'OTP' && document.type !== 'SPA' ? true : passed.has('purchaserName') && passed.has('purchaserIdNumber');
+    if (document.type !== 'OTHER' && clean && identityOk) {
+        for (const d of deal.documents) {
+            if (d.type !== document.type || d.supersededBy) continue;
+            const flagged = d.checks.filter((c) => c.status !== 'OK').map((c) => c.field);
+            if (flagged.every((f) => passed.has(f))) d.supersededBy = document.id;
+        }
     }
     deal.documents.push(document);
     await store.saveDeal(deal);
