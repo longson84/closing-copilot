@@ -49,7 +49,7 @@ export function Customers() {
             <Icon name="plus" size={15} /> Add customer
           </a>
           <a className="btn btn-primary" href="#/whatsapp">
-            <Icon name="message" size={15} /> Import WhatsApp chat
+            <Icon name="message" size={15} /> Import screenshots
           </a>
         </div>
       </header>
@@ -155,7 +155,7 @@ export function NewCustomer() {
         <div>
           <h1>Add customer</h1>
           <p className="page-sub">
-            Only the name is required. Prefer to skip the typing? <a href="#/whatsapp">Import a WhatsApp chat</a> instead.
+            Only the name is required. Prefer to skip the typing? <a href="#/whatsapp">Import screenshots</a> of a chat instead.
           </p>
         </div>
       </header>

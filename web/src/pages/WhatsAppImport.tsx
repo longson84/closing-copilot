@@ -3,7 +3,9 @@ import type { Customer, SuggestedReminder, WhatsAppAnalysis } from '../../../src
 import { analyzeWhatsApp, commitWhatsApp, getCustomer } from '../api';
 import { Transcript } from '../components/crm';
 import { AiProgress, ErrorNote, Icon, Spinner } from '../components/ui';
-import { addDaysISO, formatBudget, formatDate, purposeLabel, residencyLabel, todayISO } from '../format';
+import { addDaysISO, formatBudget, formatDate, formatDayMonth, purposeLabel, relationLabel, residencyLabel, serviceTypeLabel, todayISO } from '../format';
+import { DATE_ICON } from '../components/family';
+import { SERVICE_META } from '../components/services';
 import { navigate } from '../router';
 
 const MAX = 5;
@@ -85,11 +87,11 @@ export function WhatsAppImport({ customerId }: { customerId: string | null }) {
       </a>
       <header className="page-head">
         <div>
-          <h1>Import WhatsApp chat</h1>
+          <h1>Import from screenshots</h1>
           <p className="page-sub">
             {phase === 'review'
               ? 'Check what Copilot found. Nothing is saved until you confirm.'
-              : 'Add screenshots of the conversation. Copilot reads them, works out who it is, and drafts the note and follow-ups for you to check.'}
+              : 'Add screenshots of a WhatsApp chat or a social profile. Copilot reads them, works out who it is, and drafts the note, people, dates and follow-ups for you to check.'}
           </p>
         </div>
       </header>
@@ -174,12 +176,12 @@ function Picker({
           <Icon name="message" size={20} />
         </span>
         <span className="dropzone-text">
-          <strong>Drop 1 to 5 chat screenshots, or paste them</strong>
-          <span>Scroll the chat and take a screenshot of each part. Cmd/Ctrl+V works too.</span>
+          <strong>Drop 1 to 5 screenshots, or paste them</strong>
+          <span>A WhatsApp chat (one screenshot per scroll) or a social profile page. Cmd/Ctrl+V works too.</span>
         </span>
       </div>
       <div className="pick-mobile">
-        <p className="pick-hint">Screenshot the chat in WhatsApp, then pick the images here (up to 5).</p>
+        <p className="pick-hint">Screenshot the WhatsApp chat or their profile, then pick the images here (up to 5).</p>
         <div className="pick-buttons">
           <button type="button" className="btn btn-primary btn-touch" disabled={full} onClick={() => lib.current?.click()}>
             <Icon name="upload" size={18} /> Choose screenshots
@@ -221,6 +223,30 @@ function Review({ analysis, target, onBack }: { analysis: WhatsAppAnalysis; targ
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ----- About the customer, people, dates, services, social links -----
+  const cuKeys = (['company', 'jobTitle', 'birthday'] as const).filter((k) => analysis.customerUpdates[k]);
+  const [cuOn, setCuOn] = useState<Set<string>>(new Set(cuKeys));
+  const [peopleOn, setPeopleOn] = useState<boolean[]>(analysis.people.map(() => true));
+  const [prospects, setProspects] = useState<Set<string>>(new Set(analysis.people.filter((p) => p.isProspect).map((p) => p.name)));
+  const [datesOn, setDatesOn] = useState<boolean[]>(analysis.importantDates.map(() => true));
+  const [dateVals, setDateVals] = useState<string[]>(analysis.importantDates.map((d) => d.date));
+  const [servicesOn, setServicesOn] = useState<boolean[]>(analysis.services.map(() => true));
+  const socials = analysis.socialProfiles ?? [];
+  const [socialOn, setSocialOn] = useState<boolean[]>(socials.map(() => true));
+  const [consentMap, setConsentMap] = useState<Record<string, boolean>>(target ? { [target.id]: !!target.consent.givenAt } : {});
+  const [consentTick, setConsentTick] = useState(false);
+  const [consentMethod, setConsentMethod] = useState(`WhatsApp, ${formatDate(analysis.occurredAt ?? todayISO())}`);
+  useEffect(() => {
+    if (who && who !== 'NEW' && consentMap[who] === undefined)
+      getCustomer(who)
+        .then((d) => setConsentMap((m) => ({ ...m, [who]: !!d.customer.consent.givenAt })))
+        .catch(() => undefined);
+  }, [who, consentMap]);
+  const existingConsent = who && who !== 'NEW' ? consentMap[who] === true : false;
+  const hasConsent = existingConsent || consentTick;
+  const personalFound = analysis.people.length > 0 || analysis.importantDates.some((d) => d.personName);
+  const isPersonalDate = (i: number) => !!analysis.importantDates[i].personName;
+
   const whoName = who === 'NEW' ? newName.trim() || 'new customer' : candidates.find((c) => c.customerId === who)?.fullName;
   const canSave = who !== null && (who !== 'NEW' || newName.trim()) && summary.trim();
 
@@ -230,9 +256,30 @@ function Review({ analysis, target, onBack }: { analysis: WhatsAppAnalysis; targ
     setError(null);
     let f = analysis.facts;
     for (const row of facts) if (!factOn.has(row.key)) f = clearFact(f, row.key);
+    const keptPeople = hasConsent ? analysis.people.filter((_, i) => peopleOn[i]) : [];
+    const cu = analysis.customerUpdates;
     try {
       const d = await commitWhatsApp({
-        analysis: { ...analysis, summary: summary.trim(), keyPoints: points.map((p) => p.trim()).filter(Boolean), facts: f },
+        analysis: {
+          ...analysis,
+          summary: summary.trim(),
+          keyPoints: points.map((p) => p.trim()).filter(Boolean),
+          facts: f,
+          customerUpdates: {
+            company: cuOn.has('company') ? cu.company : null,
+            jobTitle: cuOn.has('jobTitle') ? cu.jobTitle : null,
+            birthday: cuOn.has('birthday') ? cu.birthday : null,
+          },
+          people: keptPeople,
+          importantDates: analysis.importantDates
+            .map((d, i) => ({ ...d, date: dateVals[i] || d.date }))
+            .filter((d, i) => datesOn[i] && (hasConsent || !d.personName)),
+          services: analysis.services.filter((_, i) => servicesOn[i]),
+          socialProfiles: socials.filter((_, i) => socialOn[i]),
+        },
+        consentGiven: hasConsent,
+        consentMethod: consentTick ? consentMethod.trim() || null : null,
+        createCustomersFor: keptPeople.filter((p) => prospects.has(p.name)).map((p) => p.name),
         customerId: who === 'NEW' ? null : who,
         newCustomerName: who === 'NEW' ? newName.trim() : null,
         applyFacts: applyFacts && factOn.size > 0,
@@ -357,6 +404,187 @@ function Review({ analysis, target, onBack }: { analysis: WhatsAppAnalysis; targ
                     />
                     <span className="fact-label">{f.label}</span>
                     <span className="fact-value">{f.value}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {cuKeys.length + socials.length > 0 && (
+          <section className="card">
+            <div className="card-head">
+              <h2>About the customer</h2>
+            </div>
+            <ul className="fact-list">
+              {cuKeys.map((k) => (
+                <li key={k}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={cuOn.has(k)}
+                      onChange={(e) => {
+                        const n = new Set(cuOn);
+                        if (e.target.checked) n.add(k);
+                        else n.delete(k);
+                        setCuOn(n);
+                      }}
+                    />
+                    <span className="fact-label">{k === 'company' ? 'Company' : k === 'jobTitle' ? 'Job title' : 'Birthday'}</span>
+                    <span className="fact-value">{k === 'birthday' ? formatDayMonth(analysis.customerUpdates.birthday!) : analysis.customerUpdates[k]}</span>
+                  </label>
+                </li>
+              ))}
+              {socials.map((sp, i) => (
+                <li key={sp.url}>
+                  <label>
+                    <input type="checkbox" checked={socialOn[i]} onChange={(e) => setSocialOn(socialOn.map((x, j) => (j === i ? e.target.checked : x)))} />
+                    <span className="fact-label">{({ LINKEDIN: 'LinkedIn', INSTAGRAM: 'Instagram', FACEBOOK: 'Facebook', OTHER: 'Link' } as const)[sp.platform]}</span>
+                    <span className="fact-value link-value">{sp.url.replace(/^https?:\/\/(www\.)?/, '')}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {personalFound && !existingConsent && (
+          <section className={`card consent-block${consentTick ? ' ok' : ''}`}>
+            <label className="consent-check">
+              <input type="checkbox" checked={consentTick} onChange={(e) => setConsentTick(e.target.checked)} />
+              <span>
+                <strong>{whoName && who !== 'NEW' ? whoName.split(' ')[0] : 'The customer'} agreed to me keeping these family and contact details</strong>
+                <span className="cell-sub">Required under PDPA before saving people or their dates. Their own details can be saved either way.</span>
+              </span>
+            </label>
+            {consentTick && (
+              <label className="field">
+                <span>How they agreed</span>
+                <input value={consentMethod} onChange={(e) => setConsentMethod(e.target.value)} />
+              </label>
+            )}
+          </section>
+        )}
+
+        {analysis.people.length > 0 && (
+          <section className={`card${hasConsent ? '' : ' locked'}`}>
+            <div className="card-head">
+              <h2>People mentioned</h2>
+              {!hasConsent && <span className="card-hint">Needs consent</span>}
+            </div>
+            <ul className="mention-list">
+              {analysis.people.map((p, i) => (
+                <li key={p.name}>
+                  <label className="mention">
+                    <input
+                      type="checkbox"
+                      disabled={!hasConsent}
+                      checked={hasConsent && peopleOn[i]}
+                      onChange={(e) => setPeopleOn(peopleOn.map((x, j) => (j === i ? e.target.checked : x)))}
+                    />
+                    <span className="mention-main">
+                      <span className="mention-top">
+                        <strong>{p.name}</strong>
+                        <span className="rel-chip">{p.relationLabel ?? relationLabel[p.relation]}</span>
+                      </span>
+                      <span className="cell-sub">
+                        {[p.jobTitle && p.company ? `${p.jobTitle}, ${p.company}` : p.jobTitle || p.company, p.school, p.phone, p.birthday && `Birthday ${formatDayMonth(p.birthday)}`]
+                          .filter(Boolean)
+                          .join('. ')}
+                      </span>
+                      {p.notes && <span className="cell-sub">{p.notes}</span>}
+                    </span>
+                  </label>
+                  {p.isProspect && (
+                    <label className={`switch small${!hasConsent || !peopleOn[i] ? ' disabled' : ''}`}>
+                      <input
+                        type="checkbox"
+                        disabled={!hasConsent || !peopleOn[i]}
+                        checked={prospects.has(p.name)}
+                        onChange={(e) => {
+                          const n = new Set(prospects);
+                          if (e.target.checked) n.add(p.name);
+                          else n.delete(p.name);
+                          setProspects(n);
+                        }}
+                      />
+                      <span className="switch-track" />
+                      Also create as a customer (lead)
+                    </label>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {analysis.importantDates.length > 0 && (
+          <section className="card">
+            <div className="card-head">
+              <h2>Important dates</h2>
+            </div>
+            <ul className="mention-list">
+              {analysis.importantDates.map((d, i) => {
+                const locked = isPersonalDate(i) && !hasConsent;
+                const v = dateVals[i];
+                return (
+                  <li key={i} className={locked ? 'locked' : ''}>
+                    <label className="mention">
+                      <input
+                        type="checkbox"
+                        disabled={locked}
+                        checked={!locked && datesOn[i]}
+                        onChange={(e) => setDatesOn(datesOn.map((x, j) => (j === i ? e.target.checked : x)))}
+                      />
+                      <span className="date-icon small">
+                        <Icon name={DATE_ICON[d.kind]} size={14} />
+                      </span>
+                      <span className="mention-main">
+                        <strong>{d.label}</strong>
+                        <span className="cell-sub">
+                          {d.personName ?? 'Customer'}
+                          {d.yearly ? ', every year' : ''}
+                        </span>
+                      </span>
+                    </label>
+                    {v.startsWith('--') ? (
+                      <span className="cell-sub">{formatDayMonth(v)}</span>
+                    ) : (
+                      <input
+                        type="date"
+                        className="mention-date"
+                        disabled={locked}
+                        value={v}
+                        onChange={(e) => setDateVals(dateVals.map((x, j) => (j === i ? e.target.value : x)))}
+                      />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {analysis.services.length > 0 && (
+          <section className="card">
+            <div className="card-head">
+              <h2>After-sales needs</h2>
+            </div>
+            <ul className="mention-list">
+              {analysis.services.map((sv, i) => (
+                <li key={i}>
+                  <label className="mention">
+                    <input type="checkbox" checked={servicesOn[i]} onChange={(e) => setServicesOn(servicesOn.map((x, j) => (j === i ? e.target.checked : x)))} />
+                    <span className={`svc-icon small svc-${sv.type.toLowerCase()}`}>
+                      <Icon name={SERVICE_META[sv.type].icon} size={14} />
+                    </span>
+                    <span className="mention-main">
+                      <strong>{sv.title}</strong>
+                      <span className="cell-sub">
+                        {serviceTypeLabel[sv.type]}
+                        {sv.notes ? `. ${sv.notes}` : ''}
+                      </span>
+                    </span>
                   </label>
                 </li>
               ))}

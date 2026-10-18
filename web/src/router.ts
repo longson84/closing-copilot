@@ -9,7 +9,8 @@ export type Route =
   | { name: 'customer-new' }
   | { name: 'customer'; id: string; note: string | null; tab: string | null }
   | { name: 'whatsapp'; customerId: string | null }
-  | { name: 'reminders' };
+  | { name: 'reminders' }
+  | { name: 'aftersales' };
 
 function parse(hash: string): Route {
   const h = hash.replace(/^#/, '') || '/';
@@ -25,6 +26,7 @@ function parse(hash: string): Route {
   if (c) return { name: 'customer', id: decodeURIComponent(c[1]), note: qs.get('note'), tab: qs.get('tab') };
   if (path === '/whatsapp') return { name: 'whatsapp', customerId: qs.get('customer') };
   if (path === '/reminders') return { name: 'reminders' };
+  if (path === '/aftersales') return { name: 'aftersales' };
   return { name: 'pipeline' };
 }
 

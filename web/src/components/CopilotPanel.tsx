@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { streamChat } from '../api';
 import { humanizeTool } from '../format';
+import { ASK_COPILOT } from './crm';
 import { Markdown } from './Markdown';
 import { Icon, Spinner } from './ui';
 
@@ -50,6 +51,17 @@ export function CopilotPanel({
 
   useEffect(() => () => abort.current?.abort(), []);
 
+  // Prompts sent from elsewhere in the app (e.g. "Send wishes" on Reminders).
+  const sendRef = useRef<(t: string) => void>(() => undefined);
+  useEffect(() => {
+    const on = (e: Event) => {
+      const prompt = (e as CustomEvent<string>).detail;
+      if (prompt) setTimeout(() => sendRef.current(prompt), 50);
+    };
+    window.addEventListener(ASK_COPILOT, on);
+    return () => window.removeEventListener(ASK_COPILOT, on);
+  }, []);
+
   const update = (fn: (m: Msg) => Msg) =>
     setMsgs((all) => {
       const copy = all.slice();
@@ -79,6 +91,8 @@ export function CopilotPanel({
       setBusy(false);
     }
   }
+
+  sendRef.current = send;
 
   return (
     <aside className={`copilot${open ? ' open' : ''}`} aria-label="Copilot" aria-hidden={!open}>

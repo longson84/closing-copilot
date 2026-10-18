@@ -7,7 +7,7 @@ export function StatusPill({ status }: { status: CustomerStatus }) {
   return <span className={`status-pill status-${status.toLowerCase()}`}>{statusLabel[status]}</span>;
 }
 
-export function OriginBadge({ origin }: { origin: 'AI' | 'AGENT' | 'DEAL' }) {
+export function OriginBadge({ origin }: { origin: 'AI' | 'AGENT' | 'DEAL' | 'DATE' }) {
   if (origin === 'AI')
     return (
       <span className="origin origin-ai">
@@ -15,6 +15,7 @@ export function OriginBadge({ origin }: { origin: 'AI' | 'AGENT' | 'DEAL' }) {
       </span>
     );
   if (origin === 'DEAL') return <span className="origin origin-deal">Deal deadline</span>;
+  if (origin === 'DATE') return <span className="origin origin-date">Date</span>;
   return <span className="origin origin-agent">You</span>;
 }
 
@@ -115,6 +116,12 @@ export function Section({ title, hint, action, children }: { title: string; hint
 
 /** Fired after reminders change so the nav badge refreshes. */
 export const REMINDERS_CHANGED = 'cc:reminders-changed';
+
+/** Ask Copilot something from anywhere: opens the panel and sends the prompt. */
+export const ASK_COPILOT = 'cc:ask-copilot';
+export function askCopilot(prompt: string) {
+  window.dispatchEvent(new CustomEvent(ASK_COPILOT, { detail: prompt }));
+}
 
 export const BEDROOMS = ['Studio', '1BR', '2BR', '3BR', '4BR', '5BR', 'Penthouse'] as const;
 export const SEGMENT_OPTS = ['CCR', 'RCR', 'OCR'] as const;

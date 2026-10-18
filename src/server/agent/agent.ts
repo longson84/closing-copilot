@@ -9,6 +9,7 @@ import { dealContext, listSummaries, suggestFollowUps } from '../deals.js';
 import { calcStampDuty } from '../domain/stamp-duty.js';
 import { listProjects } from '../projects.js';
 import { customerDetail, customerSummaries, reminderFeed } from '../crm.js';
+import { listServices } from '../aftersales.js';
 
 const listDealsNeedingAction = new FunctionTool({
     name: 'list_deals_needing_action',
@@ -122,6 +123,15 @@ const listReminders = new FunctionTool({
     execute: async ({ days }) => ({ today: todaySg(), items: await reminderFeed('OPEN', days ?? 7) }),
 });
 
+const listAfterSales = new FunctionTool({
+    name: 'list_after_sales_services',
+    description:
+        'After-sales services across customers: finding tenants (RENTAL), furnishing, tenancy follow-up (tenant, rent, ' +
+        'lease dates), tax filing (rental income, property tax), defects, refinancing — with status and details.',
+    parameters: z.object({ status: z.enum(['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED']).optional() }),
+    execute: async ({ status }) => ({ today: todaySg(), services: (await listServices(status)).slice(0, 30) }),
+});
+
 export const rootAgent = new LlmAgent({
     name: 'closing_copilot',
     model: config.model,
@@ -147,8 +157,11 @@ Rules:
 - Answer like a sharp colleague: short, concrete, with dates as "12 Nov 2026" and amounts as "$92,500". Use bullet points for action lists. Drafted messages to buyers are polite, brief and WhatsApp-ready.
 - Project facts (developer, TOP, tenure, prices) come from search_projects or get_deal; mention a project is fictional if the catalog says so.
 - Customers, notes and reminders come from find_customers, get_customer and list_reminders. For "what should I do today" combine list_reminders with deal deadlines.
+- get_customer includes the customer's circle (people), important dates and after-sales services. Use them to personalise (e.g. mention the children by name, the upcoming anniversary) — but only details the file contains.
+- Birthday/anniversary messages: warm, short, not salesy; no property pitch in a birthday wish.
+- Tax: you can explain what is due and when (rental income is declared in the owner's income tax return, e-filing by 18 Apr; property tax is due by 31 Jan) but say the customer should confirm their own figures with IRAS or their tax adviser.
 - English only.`;
     },
-    tools: [listDealsNeedingAction, findDeals, getDeal, stampDuty, followUps, searchProjects, findCustomers, getCustomer, listReminders],
+    tools: [listDealsNeedingAction, findDeals, getDeal, stampDuty, followUps, searchProjects, findCustomers, getCustomer, listReminders, listAfterSales],
     generateContentConfig: { temperature: 0.3 },
 });

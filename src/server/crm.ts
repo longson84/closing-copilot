@@ -4,7 +4,10 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type {
+    AfterSalesService,
     CustomerDetail,
+    ImportantDate,
+    Person,
     CustomerInput,
     CustomerSummary,
     Note,
@@ -22,6 +25,7 @@ import { BadRequest, NotFound, listSummaries } from './deals.js';
 import { addDays, diffDays, formatDate, todaySg } from './domain/dates.js';
 import { normalizeName } from './domain/identity.js';
 import { STAGE_DEFS } from './domain/stages.js';
+import { derivedDates, dueWithin, isValidDate, relationText } from './domain/important-dates.js';
 import { getProject, listProjects } from './projects.js';
 import { store, toPublicCustomer, withCrmDefaults, type StoredCustomer } from './store.js';
 
@@ -41,8 +45,20 @@ async function loadCustomer(id: string): Promise<StoredCustomer> {
 
 export async function customerDetail(id: string): Promise<CustomerDetail> {
     const c = await loadCustomer(id);
-    const [notes, reminders, deals] = await Promise.all([store.listNotes(id), store.listReminders(id), store.listDeals()]);
-    const dealIds = new Set(deals.filter((d) => d.customerId === id).map((d) => d.id));
+    const [notes, reminders, deals, people, dates, services] = await Promise.all([
+        store.listNotes(id),
+        store.listReminders(id),
+        store.listDeals(),
+        store.list('people', id),
+        store.list('dates', id),
+        store.list('services', id),
+    ]);
+    const own = deals.filter((d) => d.customerId === id);
+    const dealIds = new Set(own.map((d) => d.id));
+    const allDates = [
+        ...dates,
+        ...derivedDates({ customerId: id, customerName: c.fullName, customerBirthday: c.consent.givenAt ? c.dateOfBirth : null, people, deals: own, services }),
+    ];
     const statusOrder = { OPEN: 0, DONE: 1, DISMISSED: 2 } as const;
     return {
         customer: toPublicCustomer(c),
@@ -53,6 +69,9 @@ export async function customerDetail(id: string): Promise<CustomerDetail> {
             return project ? [{ ...m, project }] : [];
         }),
         deals: (await listSummaries()).filter((d) => dealIds.has(d.id)),
+        people: people.sort((a, b) => a.relation.localeCompare(b.relation) || a.name.localeCompare(b.name)),
+        dates: allDates,
+        services: services.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     };
 }
 
@@ -118,6 +137,10 @@ function applyInput(c: StoredCustomer, input: Partial<CustomerInput>): StoredCus
     if (input.budgetMaxSgd !== undefined) next.budgetMaxSgd = input.budgetMaxSgd;
     if (input.preferences) next.preferences = { ...next.preferences, ...input.preferences };
     if (input.tags !== undefined) next.tags = input.tags;
+    if (input.company !== undefined) next.company = input.company;
+    if (input.jobTitle !== undefined) next.jobTitle = input.jobTitle;
+    if (input.dateOfBirth !== undefined) next.dateOfBirth = input.dateOfBirth;
+    if (input.socialProfiles !== undefined) next.socialProfiles = input.socialProfiles;
     next.updatedAt = now();
     return next;
 }
@@ -255,7 +278,61 @@ export async function reminderFeed(status: Reminder['status'] = 'OPEN', days = 3
             }
         }
     }
+    if (status === 'OPEN') {
+        const [people, dates, services] = await Promise.all([store.list('people'), store.list('dates'), store.list('services')]);
+        const personById = new Map(people.map((p) => [p.id, p]));
+        for (const c of customers) {
+            const all = [
+                ...dates.filter((d) => d.customerId === c.id),
+                ...derivedDates({
+                    customerId: c.id,
+                    customerName: c.fullName,
+                    customerBirthday: c.consent.givenAt ? c.dateOfBirth : null,
+                    people: people.filter((p) => p.customerId === c.id),
+                    deals: deals.filter((d) => d.customerId === c.id),
+                    services: services.filter((x) => x.customerId === c.id),
+                }),
+            ];
+            for (const d of all) {
+                const due = dueWithin(d, today, days);
+                if (!due) continue;
+                const person = d.personId ? personById.get(d.personId) : undefined;
+                items.push({
+                    kind: 'IMPORTANT_DATE',
+                    id: `date:${d.id}:${due.next}`,
+                    customerId: c.id,
+                    customerName: c.fullName,
+                    title: dateTitle(d, person, c.fullName, due.next),
+                    detail: person ? `${person.name} is ${c.fullName}'s ${relationText(person)}.` : null,
+                    dueDate: due.next,
+                    daysLeft: due.daysLeft,
+                    origin: 'DATE',
+                    status: 'OPEN',
+                    dealId: null,
+                    dateKind: d.kind,
+                    personName: person?.name ?? null,
+                    relationLabel: person ? relationText(person) : null,
+                });
+            }
+        }
+    }
     return items.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+}
+
+/** "GOH BOON KIAT" -> "Goh Boon Kiat" (names read from IDs are upper case). */
+function titleCase(name: string): string {
+    return name === name.toUpperCase() ? name.toLowerCase().replace(/\b([a-z])/g, (ch) => ch.toUpperCase()) : name;
+}
+
+function dateTitle(d: ImportantDate, person: Person | undefined, customerName: string, on: string): string {
+    if (d.kind === 'BIRTHDAY') {
+        const name = person?.name ?? titleCase(customerName);
+        const whose = person ? ` (${relationText(person)} of ${titleCase(customerName)})` : '';
+        const m = /^(\d{4})-/.exec(d.date);
+        const age = m ? Number(on.slice(0, 4)) - Number(m[1]) : null;
+        return age !== null && age > 0 && age < 120 ? `${name} turns ${age}${whose}` : `${name}'s birthday${whose}`;
+    }
+    return person ? `${d.label} — ${person.name}` : d.label;
 }
 
 // ---------- AI: follow-up plan ----------
@@ -370,7 +447,7 @@ const Residency = z.enum(['SC', 'SPR', 'FOREIGNER']).nullable();
 const Purpose = z.enum(['OWN_STAY', 'INVESTMENT']).nullable();
 const Segment = z.enum(['CCR', 'RCR', 'OCR']);
 
-const ChatSchema = z.object({
+export const ChatSchema = z.object({
     contactName: z.string().nullable(),
     contactPhone: z.string().nullable(),
     occurredAt: z.string().nullable(),
@@ -392,6 +469,66 @@ const ChatSchema = z.object({
     }),
     suggestedReminders: z.array(z.object({ title: z.string(), detail: z.string().nullable(), dueDate: z.string().regex(DATE) })).max(6),
 });
+
+// Second extraction pass (kept separate: one schema with everything exceeds Gemini's schema limits).
+export const CircleSchema = z.object({
+    customerUpdates: z.object({ company: z.string().nullable(), jobTitle: z.string().nullable(), birthday: z.string().nullable() }),
+    socialProfiles: z.array(z.object({ platform: z.enum(['LINKEDIN', 'INSTAGRAM', 'FACEBOOK', 'OTHER']), url: z.string() })).max(6),
+    people: z
+        .array(
+            z.object({
+                name: z.string(),
+                relation: z.enum(['SPOUSE', 'CHILD', 'PARENT', 'SIBLING', 'OTHER_RELATIVE', 'COLLEAGUE', 'FRIEND', 'ADVISOR', 'TENANT', 'OTHER']),
+                relationLabel: z.string().nullable(),
+                birthday: z.string().nullable(),
+                company: z.string().nullable(),
+                jobTitle: z.string().nullable(),
+                school: z.string().nullable(),
+                phone: z.string().nullable(),
+                notes: z.string().nullable(),
+                isProspect: z.boolean(),
+            }),
+        )
+        .max(15),
+    importantDates: z
+        .array(
+            z.object({
+                label: z.string(),
+                kind: z.enum(['BIRTHDAY', 'ANNIVERSARY', 'HANDOVER', 'SCHOOL', 'LEASE', 'TAX', 'CUSTOM']),
+                date: z.string(),
+                yearly: z.boolean(),
+                personName: z.string().nullable(),
+            }),
+        )
+        .max(15),
+    services: z
+        .array(
+            z.object({
+                type: z.enum(['RENTAL', 'FURNISHING', 'TENANCY', 'TAX', 'DEFECTS', 'REFINANCING', 'OTHER']),
+                title: z.string(),
+                // Fixed keys (Gemini's schema support has no open maps); nulls are dropped after parsing.
+                details: z.object({
+                    askingRentSgd: z.number().nullable(),
+                    availableFrom: z.string().nullable(),
+                    budgetSgd: z.number().nullable(),
+                    scope: z.string().nullable(),
+                    vendor: z.string().nullable(),
+                    tenantName: z.string().nullable(),
+                    monthlyRentSgd: z.number().nullable(),
+                    leaseStart: z.string().nullable(),
+                    leaseEnd: z.string().nullable(),
+                    taxYear: z.number().nullable(),
+                    taxType: z.string().nullable(),
+                }),
+                notes: z.string().nullable(),
+            }),
+        )
+        .max(6),
+});
+// Even this exceeds the limit in one call, so it is requested in two halves.
+const PeopleSchema = CircleSchema.pick({ customerUpdates: true, socialProfiles: true, people: true });
+const DatesServicesSchema = CircleSchema.pick({ importantDates: true, services: true });
+
 
 function phoneDigits(p: string | null | undefined): string {
     return (p ?? '').replace(/\D/g, '').slice(-8);
@@ -419,14 +556,16 @@ function rankCandidates(customers: StoredCustomer[], name: string | null, phone:
 export async function analyzeWhatsApp(files: Array<{ mimeType: string; data: Buffer }>): Promise<WhatsAppAnalysis> {
     if (files.length === 0 || files.length > 5) throw new BadRequest('Upload 1 to 5 screenshots.');
     const today = todaySg();
-    const out = await generateJson({
+    const chatCall = generateJson({
         schema: ChatSchema,
         files,
         system:
             `You read WhatsApp chat screenshots for ${config.agentName}, a Singapore property agent. Her own messages are ` +
             'the outgoing bubbles on the right (AGENT); the contact is on the left (CUSTOMER). Screenshots may overlap — ' +
-            'de-duplicate messages and keep chronological order. Copy message text faithfully. Extract only facts the ' +
-            'chat actually states; use null/empty when not stated. Never include NRIC numbers.',
+            'de-duplicate messages and keep chronological order. Copy message text faithfully. A screenshot may instead be ' +
+            "a social profile (LinkedIn/Instagram/Facebook) of the contact: then transcript is empty, summarise the profile, " +
+            'and extract work, family mentions, dates and the profile URL if visible. Extract only facts actually shown; ' +
+            'use null/empty when not stated. Never include NRIC numbers.',
         prompt: `Today is ${formatDate(today)} (${today}, ${new Date(`${today}T00:00:00Z`).toLocaleDateString('en-SG', { weekday: 'long', timeZone: 'UTC' })}).
 Resolve relative dates ("next Saturday", "Tuesday", "Yesterday") against today, as YYYY-MM-DD.
 - contactName / contactPhone: from the chat header.
@@ -434,30 +573,79 @@ Resolve relative dates ("next Saturday", "Tuesday", "Yesterday") against today, 
 - summary: 2–3 sentences an agent can scan.
 - keyPoints: 3–7 crisp bullets (needs, objections, commitments either side, deadlines).
 - facts: residency SC/SPR/FOREIGNER; purpose OWN_STAY/INVESTMENT; propertiesOwned = residential properties already owned (an HDB flat counts); budgets in SGD numbers; areas and bedrooms as short labels ("Tampines", "4BR"); segments only if clearly implied; executiveCondo true if they want/are open to an EC.
-- suggestedReminders: concrete follow-ups for the agent with due dates, including every promise the agent made and any appointment.`,
+- suggestedReminders: concrete follow-ups for the agent with due dates, including every promise the agent made and any appointment.
+`,
     });
-    return { ...out, candidates: rankCandidates(await store.listCustomers(), out.contactName, out.contactPhone) };
+    const peopleCall = generateJson({
+        schema: PeopleSchema,
+        files,
+        system:
+            `You read screenshots (WhatsApp chats or a social profile) for ${config.agentName}, a Singapore property agent, ` +
+            'to build an after-sales relationship profile of the contact. Her messages are on the right; the contact on ' +
+            'the left. Extract only what is actually shown; null/empty otherwise. Never include NRIC numbers.',
+        prompt: `Today is ${formatDate(today)} (${today}). Resolve relative dates against today as YYYY-MM-DD.
+- customerUpdates: the contact's own company, job title, birthday (YYYY-MM-DD, or --MM-DD if the year is not known).
+- socialProfiles: profile URLs that are visible.
+- people: everyone else mentioned in the contact's circle — spouse, children, parents, siblings, colleagues, friends, advisors (lawyer, banker), tenants — with relation from the contact's point of view, relationLabel in plain words ("Brother", "Younger daughter"), and any birthday/age-derived info only if stated (birthday as YYYY-MM-DD or --MM-DD). isProspect = they may buy or rent property themselves (e.g. a referral).
+- importantDates: dates worth remembering (birthdays, wedding anniversary, key handover, school start, lease end, tax deadlines, events), with personName when it belongs to someone in people (null if it is the contact's own). yearly = recurs each year.
+- services: after-sales help requested or clearly needed: RENTAL (find a tenant: askingRentSgd, availableFrom), FURNISHING (budgetSgd, scope), TENANCY (tenantName, monthlyRentSgd, leaseStart, leaseEnd), TAX (taxYear = Year of Assessment, taxType), DEFECTS, REFINANCING, OTHER.`,
+    });
+    const datesCall = generateJson({
+        schema: DatesServicesSchema,
+        files,
+        system:
+            `You read screenshots (WhatsApp chats or a social profile) for ${config.agentName}, a Singapore property agent, ` +
+            'to build an after-sales relationship profile of the contact. Her messages are on the right; the contact on ' +
+            'the left. Extract only what is actually shown; null/empty otherwise. Never include NRIC numbers.',
+        prompt: `Today is ${formatDate(today)} (${today}). Resolve relative dates against today as YYYY-MM-DD.
+- customerUpdates: the contact's own company, job title, birthday (YYYY-MM-DD, or --MM-DD if the year is not known).
+- socialProfiles: profile URLs that are visible.
+- people: everyone else mentioned in the contact's circle — spouse, children, parents, siblings, colleagues, friends, advisors (lawyer, banker), tenants — with relation from the contact's point of view, relationLabel in plain words ("Brother", "Younger daughter"), and any birthday/age-derived info only if stated (birthday as YYYY-MM-DD or --MM-DD). isProspect = they may buy or rent property themselves (e.g. a referral).
+- importantDates: dates worth remembering (birthdays, wedding anniversary, key handover, school start, lease end, tax deadlines, events), with personName when it belongs to someone in people (null if it is the contact's own). yearly = recurs each year.
+- services: after-sales help requested or clearly needed: RENTAL (find a tenant: askingRentSgd, availableFrom), FURNISHING (budgetSgd, scope), TENANCY (tenantName, monthlyRentSgd, leaseStart, leaseEnd), TAX (taxYear = Year of Assessment, taxType), DEFECTS, REFINANCING, OTHER.`,
+    });
+    const [out, people, dated] = await Promise.all([chatCall, peopleCall, datesCall]);
+    const circle = { ...people, ...dated };
+    return {
+        ...out,
+        ...circle,
+        services: circle.services.map((sv) => ({ ...sv, details: Object.fromEntries(Object.entries(sv.details).filter(([, v]) => v !== null)) })),
+        candidates: rankCandidates(await store.listCustomers(), out.contactName, out.contactPhone),
+    };
 }
 
 export async function commitWhatsApp(input: WhatsAppCommit): Promise<CustomerDetail> {
+    const a = input.analysis;
     let c: StoredCustomer;
     if (input.customerId) {
         c = await loadCustomer(input.customerId);
     } else {
         const name = input.newCustomerName?.trim();
         if (!name) throw new BadRequest('Confirm the customer name before saving.');
-        c = withCrmDefaults({ id: randomUUID(), fullName: name, phone: input.analysis.contactPhone, source: 'WhatsApp' });
+        c = withCrmDefaults({ id: randomUUID(), fullName: name, phone: a.contactPhone, source: 'WhatsApp' });
     }
-    if (!c.phone && input.analysis.contactPhone) c.phone = input.analysis.contactPhone;
+    // PDPA: details about other people are stored only with the customer's consent.
+    if (input.consentGiven && !c.consent.givenAt) c.consent = { givenAt: now(), method: input.consentMethod?.trim() || 'Recorded during screenshot import' };
+    const hasConsent = !!c.consent.givenAt;
+    const relativeDates = a.importantDates.filter((d) => d.personName);
+    if (!hasConsent && (a.people.length > 0 || relativeDates.length > 0)) {
+        throw new BadRequest("Record the customer's consent before saving family or contact details.");
+    }
+
+    if (!c.phone && a.contactPhone) c.phone = a.contactPhone;
+    if (a.customerUpdates.company) c.company = a.customerUpdates.company;
+    if (a.customerUpdates.jobTitle) c.jobTitle = a.customerUpdates.jobTitle;
+    if (a.customerUpdates.birthday && isValidDate(a.customerUpdates.birthday)) c.dateOfBirth = a.customerUpdates.birthday;
+    for (const sp of a.socialProfiles) if (!c.socialProfiles.some((x) => x.url === sp.url)) c.socialProfiles.push(sp);
     if (input.applyFacts) {
-        const f = input.analysis.facts;
+        const f = a.facts;
         if (f.residency) c.residency = f.residency;
         if (f.purpose) c.profile.purpose = f.purpose;
         if (f.propertiesOwned !== null) c.profile.propertiesOwned = f.propertiesOwned;
         if (f.household) c.profile.household = f.household;
         if (f.budgetMinSgd !== null) c.budgetMinSgd = f.budgetMinSgd;
         if (f.budgetMaxSgd !== null) c.budgetMaxSgd = f.budgetMaxSgd;
-        const merge = <T>(a: T[], b: T[]) => [...new Set([...a, ...b])];
+        const merge = <T>(x: T[], y: T[]) => [...new Set([...x, ...y])];
         c.preferences.areas = merge(c.preferences.areas, f.areas);
         c.preferences.bedrooms = merge(c.preferences.bedrooms, f.bedrooms);
         c.preferences.segments = merge(c.preferences.segments, f.segments);
@@ -467,15 +655,116 @@ export async function commitWhatsApp(input: WhatsAppCommit): Promise<CustomerDet
     }
     c.updatedAt = now();
     await store.saveCustomer(c);
+
+    // People: update someone already in the circle (same name), otherwise add them.
+    const existing = await store.list('people', c.id);
+    const byName = new Map(existing.map((p) => [normalizeName(p.name), p]));
+    const savedPeople = new Map<string, Person>();
+    for (const x of a.people) {
+        const key = normalizeName(x.name);
+        const prev = byName.get(key);
+        const person: Person = prev
+            ? {
+                  ...prev,
+                  relationLabel: x.relationLabel ?? prev.relationLabel,
+                  birthday: x.birthday && isValidDate(x.birthday) ? x.birthday : prev.birthday,
+                  company: x.company ?? prev.company,
+                  jobTitle: x.jobTitle ?? prev.jobTitle,
+                  school: x.school ?? prev.school,
+                  phone: x.phone ?? prev.phone,
+                  notes: x.notes ? [prev.notes, x.notes].filter(Boolean).join('\n') : prev.notes,
+                  updatedAt: now(),
+              }
+            : {
+                  id: randomUUID(),
+                  customerId: c.id,
+                  name: x.name.trim(),
+                  relation: x.relation,
+                  relationLabel: x.relationLabel,
+                  birthday: x.birthday && isValidDate(x.birthday) ? x.birthday : null,
+                  company: x.company,
+                  jobTitle: x.jobTitle,
+                  school: x.school,
+                  phone: x.phone,
+                  email: null,
+                  notes: x.notes,
+                  linkedCustomerId: null,
+                  source: 'WHATSAPP_AI',
+                  createdAt: now(),
+                  updatedAt: now(),
+              };
+        // Referral: open a lead for them, linked from this person.
+        if (input.createCustomersFor.some((n) => normalizeName(n) === key) && !person.linkedCustomerId) {
+            const lead = withCrmDefaults({ id: randomUUID(), fullName: person.name, phone: person.phone, source: `Referral from ${c.fullName}`, status: 'LEAD' });
+            await store.saveCustomer(lead);
+            await store.saveNote({
+                id: randomUUID(),
+                customerId: lead.id,
+                kind: 'DISCUSSION',
+                text: `Referred by ${c.fullName} (${person.relationLabel ?? person.relation.toLowerCase()}). ${person.notes ?? ''}`.trim(),
+                source: 'WHATSAPP_AI',
+                keyPoints: [],
+                transcript: [],
+                occurredAt: a.occurredAt,
+                createdAt: now(),
+            });
+            person.linkedCustomerId = lead.id;
+        }
+        await store.save('people', person);
+        savedPeople.set(key, person);
+    }
+
+    const savedDates = await store.list('dates', c.id);
+    for (const d of a.importantDates) {
+        if (!isValidDate(d.date)) continue;
+        const person = d.personName ? (savedPeople.get(normalizeName(d.personName)) ?? byName.get(normalizeName(d.personName))) : undefined;
+        if (d.personName && !person) continue; // never store a relative's date without the relative
+        if (d.kind === 'BIRTHDAY' && person) {
+            if (!person.birthday) await store.save('people', { ...person, birthday: d.date, updatedAt: now() });
+            continue; // birthdays live on the person and are derived from there
+        }
+        if (savedDates.some((x) => x.date === d.date && normalizeName(x.label) === normalizeName(d.label))) continue;
+        await store.save('dates', {
+            id: randomUUID(),
+            customerId: c.id,
+            personId: person?.id ?? null,
+            serviceId: null,
+            kind: d.kind,
+            label: d.label,
+            date: d.date,
+            yearly: d.yearly,
+            remindDaysBefore: d.kind === 'BIRTHDAY' ? 3 : 7,
+            source: 'WHATSAPP_AI',
+            createdAt: now(),
+        });
+    }
+
+    for (const sv of a.services) {
+        const service: AfterSalesService = {
+            id: randomUUID(),
+            customerId: c.id,
+            dealId: null,
+            property: null,
+            type: sv.type,
+            title: sv.title,
+            status: 'OPEN',
+            details: sv.details,
+            notes: sv.notes,
+            createdAt: now(),
+            updatedAt: now(),
+        };
+        await store.save('services', service);
+    }
+
     const note: Note = {
         id: randomUUID(),
         customerId: c.id,
         kind: 'DISCUSSION',
-        text: input.analysis.summary,
+        text: a.summary,
         source: 'WHATSAPP_AI',
-        keyPoints: input.analysis.keyPoints,
-        transcript: input.analysis.transcript,
-        occurredAt: input.analysis.occurredAt,
+        keyPoints: a.keyPoints,
+        transcript: a.transcript,
+        occurredAt: a.occurredAt,
         createdAt: now(),
     };
     await store.saveNote(note);

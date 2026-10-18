@@ -5,6 +5,10 @@ import type {
   DealSummary,
   FollowUp,
   Project,
+  AfterSalesService,
+  DateInput,
+  PersonInput,
+  ServiceInput,
   CustomerDetail,
   CustomerInput,
   CustomerSummary,
@@ -240,4 +244,55 @@ export async function analyzeWhatsApp(files: File[]): Promise<WhatsAppAnalysis> 
 export async function commitWhatsApp(body: WhatsAppCommit): Promise<CustomerDetail> {
   if (MOCK) return (await crm()).commitWhatsApp(body);
   return json(await fetch('/api/whatsapp/commit', jsonInit('POST', body)));
+}
+
+// ---------- Family, dates, after-sales ----------
+
+export async function addPerson(id: string, input: PersonInput): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).addPerson(id, input);
+  return json(await fetch(`/api/customers/${enc(id)}/people`, jsonInit('POST', input)));
+}
+export async function updatePerson(id: string, pid: string, input: Partial<PersonInput>): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).updatePerson(id, pid, input);
+  return json(await fetch(`/api/customers/${enc(id)}/people/${enc(pid)}`, jsonInit('PATCH', input)));
+}
+export async function deletePerson(id: string, pid: string): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).deletePerson(id, pid);
+  return json(await fetch(`/api/customers/${enc(id)}/people/${enc(pid)}`, jsonInit('DELETE')));
+}
+export async function addDate(id: string, input: DateInput): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).addDate(id, input);
+  return json(await fetch(`/api/customers/${enc(id)}/dates`, jsonInit('POST', input)));
+}
+export async function updateDate(id: string, did: string, input: Partial<DateInput>): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).updateDate(id, did, input);
+  return json(await fetch(`/api/customers/${enc(id)}/dates/${enc(did)}`, jsonInit('PATCH', input)));
+}
+export async function deleteDate(id: string, did: string): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).deleteDate(id, did);
+  return json(await fetch(`/api/customers/${enc(id)}/dates/${enc(did)}`, jsonInit('DELETE')));
+}
+export async function addService(id: string, input: ServiceInput): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).addService(id, input);
+  return json(await fetch(`/api/customers/${enc(id)}/services`, jsonInit('POST', input)));
+}
+export async function updateService(id: string, sid: string, input: Partial<ServiceInput>): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).updateService(id, sid, input);
+  return json(await fetch(`/api/customers/${enc(id)}/services/${enc(sid)}`, jsonInit('PATCH', input)));
+}
+export async function deleteService(id: string, sid: string): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).deleteService(id, sid);
+  return json(await fetch(`/api/customers/${enc(id)}/services/${enc(sid)}`, jsonInit('DELETE')));
+}
+export async function setConsent(id: string, given: boolean, method?: string): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).setConsent(id, given, method);
+  return json(await fetch(`/api/customers/${enc(id)}/consent`, jsonInit('POST', { given, ...(method ? { method } : {}) })));
+}
+export async function listServices(): Promise<Array<AfterSalesService & { customerName: string }>> {
+  if (MOCK) return (await crm()).listServices();
+  return json(await fetch('/api/services?status=OPEN'));
+}
+export async function researchCompany(id: string): Promise<CustomerDetail> {
+  if (MOCK) return (await crm()).researchCompany(id);
+  return json(await fetch(`/api/customers/${enc(id)}/research`, jsonInit('POST', { topic: 'COMPANY' })));
 }

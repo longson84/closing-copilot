@@ -35,3 +35,21 @@ export async function generateJson<T extends z.ZodType>(opts: {
     if (!text) throw new Error('Gemini returned no content');
     return opts.schema.parse(JSON.parse(text));
 }
+
+/** Gemini answer grounded with Google Search; returns the text and the web sources it used. */
+export async function generateGrounded(opts: { prompt: string; system?: string }): Promise<{ text: string; sources: Array<{ title: string; url: string }> }> {
+    const res = await ai().models.generateContent({
+        model: config.model,
+        contents: [{ role: 'user', parts: [{ text: opts.prompt }] }],
+        config: { systemInstruction: opts.system, tools: [{ googleSearch: {} }], temperature: 0.2 },
+    });
+    const chunks = res.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
+    const seen = new Set<string>();
+    const sources = chunks.flatMap((c) => {
+        const url = c.web?.uri;
+        if (!url || seen.has(url)) return [];
+        seen.add(url);
+        return [{ title: c.web?.title ?? url, url }];
+    });
+    return { text: res.text ?? '', sources };
+}

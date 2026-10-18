@@ -9,6 +9,7 @@ import {
   getCustomer,
   listProjects,
   planFollowups,
+  researchCompany,
   suggestMatches,
   updateCustomer,
   updateMatch,
@@ -16,6 +17,8 @@ import {
 } from '../api';
 import { OriginBadge, REMINDERS_CHANGED, StatusPill, Transcript, WhatsAppBadge } from '../components/crm';
 import { CustomerForm } from '../components/CustomerForm';
+import { FamilyTab } from '../components/family';
+import { AfterSalesTab } from '../components/services';
 import { ProjectBadges } from '../components/ProjectCard';
 import { ProjectPicker, type ProjectChoice } from '../components/ProjectPicker';
 import { ErrorNote, Icon, RiskBadge, Spinner } from '../components/ui';
@@ -36,7 +39,8 @@ import {
 } from '../format';
 import { Segmented } from './NewBooking';
 
-type Tab = 'overview' | 'notes' | 'reminders' | 'projects' | 'deals';
+type Tab = 'overview' | 'notes' | 'reminders' | 'projects' | 'deals' | 'family' | 'aftersales';
+const MAIN_TABS: Tab[] = ['overview', 'notes', 'reminders', 'projects', 'deals'];
 
 export function CustomerPage({ id, highlightNote, initialTab }: { id: string; highlightNote: string | null; initialTab: string | null }) {
   const [data, setData] = useState<CustomerDetail | null>(null);
@@ -44,6 +48,12 @@ export function CustomerPage({ id, highlightNote, initialTab }: { id: string; hi
   const [actionError, setActionError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>((initialTab as Tab) || (highlightNote ? 'notes' : 'overview'));
   const [editing, setEditing] = useState(false);
+  const [hl, setHl] = useState<string | null>(highlightNote);
+  const [researching, setResearching] = useState(false);
+
+  useEffect(() => {
+    document.querySelector('.phone-tabs .on')?.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }, [tab, data === null]);
 
   const load = useCallback(() => {
     setError(null);
@@ -92,7 +102,33 @@ export function CustomerPage({ id, highlightNote, initialTab }: { id: string; hi
     ['projects', 'Projects', matches.filter((m) => m.status !== 'REJECTED').length],
     ['deals', 'Deals', deals.length],
   ];
+  tabs.push(['family', 'Family', data.people.length], ['aftersales', 'After-sales', data.services.filter((x) => x.status === 'OPEN' || x.status === 'IN_PROGRESS').length]);
   const sec = (t: Tab) => `cust-sec${tab === t ? ' active' : ''}`;
+  const isMain = MAIN_TABS.includes(tab);
+  const desktopTabs: [Tab, string, number | null][] = [
+    ['overview', 'Overview', null],
+    ['family', 'Family & dates', data.people.length + data.dates.length],
+    ['aftersales', 'After-sales', tabs[tabs.length - 1][2]],
+  ];
+
+  async function research() {
+    setResearching(true);
+    const before = new Set(data!.notes.map((n) => n.id));
+    setActionError(null);
+    try {
+      const d = await researchCompany(id);
+      setData(d);
+      const fresh = d.notes.find((n) => !before.has(n.id));
+      if (fresh) {
+        setHl(fresh.id);
+        setTab('notes');
+      }
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setResearching(false);
+    }
+  }
 
   return (
     <div className="page">
@@ -115,14 +151,25 @@ export function CustomerPage({ id, highlightNote, initialTab }: { id: string; hi
             <Icon name="plus" size={15} /> Book this customer
           </a>
           <a className="btn btn-primary" href={`#/whatsapp?customer=${encodeURIComponent(c.id)}`}>
-            <Icon name="message" size={15} /> Import WhatsApp chat
+            <Icon name="message" size={15} /> Import screenshots
           </a>
         </div>
       </header>
 
       {actionError && <ErrorNote message={actionError} />}
 
-      <nav className="cust-tabs" role="tablist">
+      <nav className="cust-tabs desktop-tabs" role="tablist">
+        {desktopTabs.map(([k, label, n]) => {
+          const on = k === 'overview' ? isMain : tab === k;
+          return (
+            <button key={k} role="tab" aria-selected={on} className={on ? 'on' : ''} onClick={() => setTab(k)}>
+              {label}
+              {n !== null && n > 0 && <span className="tab-count">{n}</span>}
+            </button>
+          );
+        })}
+      </nav>
+      <nav className="cust-tabs phone-tabs" role="tablist">
         {tabs.map(([k, label, n]) => (
           <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
             {label}
@@ -131,10 +178,18 @@ export function CustomerPage({ id, highlightNote, initialTab }: { id: string; hi
         ))}
       </nav>
 
+      {researching && (
+        <div className="research-progress" role="status">
+          <Spinner size={14} /> Searching Google with Gemini for {c.company}…
+        </div>
+      )}
+      {tab === 'family' && <FamilyTab data={data} run={run} />}
+      {tab === 'aftersales' && <AfterSalesTab data={data} run={run} />}
+      {isMain && (
       <div className="cust-grid">
         <div className="col">
           <div className={sec('notes')}>
-            <NotesSection data={data} run={run} highlight={highlightNote} />
+            <NotesSection data={data} run={run} highlight={hl} />
           </div>
           <div className={sec('projects')}>
             <MatchesSection data={data} run={run} />
@@ -142,7 +197,7 @@ export function CustomerPage({ id, highlightNote, initialTab }: { id: string; hi
         </div>
         <div className="col">
           <div className={sec('overview')}>
-            <ProfileSection data={data} onEdit={() => setEditing(true)} />
+            <ProfileSection data={data} onEdit={() => setEditing(true)} onResearch={research} researching={researching} />
           </div>
           <div className={sec('reminders')}>
             <RemindersSection data={data} run={run} reload={load} />
@@ -152,6 +207,7 @@ export function CustomerPage({ id, highlightNote, initialTab }: { id: string; hi
           </div>
         </div>
       </div>
+      )}
 
       {editing && (
         <div className="dialog-backdrop" onClick={() => setEditing(false)}>
@@ -199,10 +255,26 @@ type Run = (p: Promise<CustomerDetail>) => Promise<boolean>;
 
 /* ---------------- Profile ---------------- */
 
-function ProfileSection({ data, onEdit }: { data: CustomerDetail; onEdit: () => void }) {
+const SOCIAL_ICON = { LINKEDIN: 'linkedin', INSTAGRAM: 'instagram', FACEBOOK: 'facebook', OTHER: 'globe' } as const;
+const SOCIAL_LABEL = { LINKEDIN: 'LinkedIn', INSTAGRAM: 'Instagram', FACEBOOK: 'Facebook', OTHER: 'Website' } as const;
+
+function ProfileSection({
+  data,
+  onEdit,
+  onResearch,
+  researching,
+}: {
+  data: CustomerDetail;
+  onEdit: () => void;
+  onResearch: () => void;
+  researching: boolean;
+}) {
   const c = data.customer;
   const p = c.preferences;
+  const consent = !!c.consent.givenAt;
   const rows: [string, string | null, boolean?][] = [
+    ['Works at', [c.jobTitle, c.company].filter(Boolean).join(', ') || null, true],
+    ['Date of birth', c.dateOfBirth ? formatDate(c.dateOfBirth) : null],
     [c.idType ?? 'ID', c.idNumberMasked],
     ['Residency', c.residency ? residencyLabel[c.residency] : null],
     ['Purpose', c.profile.purpose ? purposeLabel[c.profile.purpose] : null],
@@ -221,10 +293,28 @@ function ProfileSection({ data, onEdit }: { data: CustomerDetail; onEdit: () => 
     <section className="card">
       <div className="card-head">
         <h2>Profile</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onEdit}>
-          Edit
-        </button>
+        <span className="head-actions small">
+          {c.company && (
+            <span title={consent ? `Search the web for ${c.company}` : 'Record consent on the Family tab first'}>
+              <button className="btn btn-ghost btn-sm" onClick={onResearch} disabled={!consent || researching}>
+                {researching ? <Spinner size={13} /> : <Icon name="globe" size={13} />} Research company
+              </button>
+            </span>
+          )}
+          <button className="btn btn-ghost btn-sm" onClick={onEdit}>
+            Edit
+          </button>
+        </span>
       </div>
+      {c.socialProfiles.length > 0 && (
+        <div className="socials">
+          {c.socialProfiles.map((sp) => (
+            <a key={sp.url} href={sp.url} target="_blank" rel="noopener noreferrer" className="social" title={sp.url}>
+              <Icon name={SOCIAL_ICON[sp.platform]} size={15} /> {SOCIAL_LABEL[sp.platform]}
+            </a>
+          ))}
+        </div>
+      )}
       <dl className="kv">
         {rows
           .filter(([, v]) => v)
@@ -366,15 +456,21 @@ function NotesSection({ data, run, highlight }: { data: CustomerDetail; run: Run
 function NoteItem({ n, highlight, onDelete }: { n: Note; highlight: boolean; onDelete: () => void }) {
   const [open, setOpen] = useState(highlight);
   const wa = n.source === 'WHATSAPP_AI';
+  const web = n.source === 'WEB_AI';
   return (
-    <li className={`note note-${n.kind.toLowerCase()}${wa ? ' note-wa' : ''}${highlight ? ' highlight' : ''}`} id={`note-${n.id}`}>
+    <li className={`note note-${n.kind.toLowerCase()}${wa ? ' note-wa' : ''}${web ? ' note-web' : ''}${highlight ? ' highlight' : ''}`} id={`note-${n.id}`}>
       <span className="note-dot">
-        <Icon name={wa ? 'message' : KIND_ICON[n.kind]} size={13} />
+        <Icon name={wa ? 'message' : web ? 'globe' : KIND_ICON[n.kind]} size={13} />
       </span>
       <div className="note-body">
         <div className="note-meta">
           <strong>{noteKindLabel[n.kind]}</strong>
           {wa && <WhatsAppBadge />}
+          {web && (
+            <span className="origin origin-web">
+              <Icon name="globe" size={11} /> Web research
+            </span>
+          )}
           <span className="muted">{n.occurredAt ? formatDate(n.occurredAt) : relativeDay(n.createdAt)}</span>
           <button
             className="icon-btn note-del"
@@ -392,6 +488,20 @@ function NoteItem({ n, highlight, onDelete }: { n: Note; highlight: boolean; onD
               <li key={i}>{k}</li>
             ))}
           </ul>
+        )}
+        {n.sources && n.sources.length > 0 && (
+          <div className="note-sources">
+            <span>Sources</span>
+            <ol>
+              {n.sources.map((src) => (
+                <li key={src.url}>
+                  <a href={src.url} target="_blank" rel="noopener noreferrer">
+                    {src.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
         )}
         {n.transcript.length > 0 && (
           <>

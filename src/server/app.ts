@@ -26,6 +26,20 @@ import {
     updateCustomer,
     updateReminder,
 } from './crm.js';
+import {
+    addDate,
+    addPerson,
+    addService,
+    deleteDate,
+    deletePerson,
+    deleteService,
+    listServices,
+    researchCompany,
+    setConsent,
+    updateDate,
+    updatePerson,
+    updateService,
+} from './aftersales.js';
 
 const MAX_UPLOAD = 15 * 1024 * 1024;
 const ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
@@ -125,6 +139,43 @@ app.post('/api/chat', async (c) => {
 
 const Date10 = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const Money = z.number().min(0).max(1e9).nullable();
+const SocialFields = z.object({ platform: z.enum(['LINKEDIN', 'INSTAGRAM', 'FACEBOOK', 'OTHER']), url: z.string().url().max(300).refine((u) => /^https?:\/\//.test(u), 'http(s) only') });
+const Relation = z.enum(['SPOUSE', 'CHILD', 'PARENT', 'SIBLING', 'OTHER_RELATIVE', 'COLLEAGUE', 'FRIEND', 'ADVISOR', 'TENANT', 'OTHER']);
+const DateKind = z.enum(['BIRTHDAY', 'ANNIVERSARY', 'HANDOVER', 'SCHOOL', 'LEASE', 'TAX', 'CUSTOM']);
+const ServiceType = z.enum(['RENTAL', 'FURNISHING', 'TENANCY', 'TAX', 'DEFECTS', 'REFINANCING', 'OTHER']);
+const Details = z.record(z.string().max(40), z.union([z.string().max(500), z.number(), z.boolean(), z.null()])).refine((d) => Object.keys(d).length <= 30);
+const Str = (n: number) => z.string().max(n).nullable();
+const PersonFields = z.object({
+    name: z.string().trim().min(1).max(120),
+    relation: Relation,
+    relationLabel: Str(60),
+    birthday: Str(10),
+    company: Str(120),
+    jobTitle: Str(120),
+    school: Str(120),
+    phone: Str(40),
+    email: Str(120),
+    notes: Str(2000),
+    linkedCustomerId: Str(100),
+});
+const DateFields = z.object({
+    personId: Str(100),
+    serviceId: Str(100),
+    kind: DateKind,
+    label: z.string().trim().min(1).max(160),
+    date: z.string().max(10),
+    yearly: z.boolean(),
+    remindDaysBefore: z.number().int().min(0).max(365),
+});
+const ServiceFields = z.object({
+    dealId: Str(100),
+    property: Str(160),
+    type: ServiceType,
+    title: z.string().trim().min(1).max(160),
+    status: z.enum(['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED']),
+    details: Details,
+    notes: Str(4000),
+});
 const CustomerFields = z.object({
     fullName: z.string().trim().min(1).max(120),
     phone: z.string().max(40).nullable().optional(),
@@ -149,6 +200,10 @@ const CustomerFields = z.object({
         .partial()
         .optional(),
     tags: z.array(z.string().max(40)).max(20).optional(),
+    company: z.string().max(120).nullable().optional(),
+    jobTitle: z.string().max(120).nullable().optional(),
+    dateOfBirth: z.string().regex(/^(\d{4}|-)-\d{2}-\d{2}$/).nullable().optional(),
+    socialProfiles: z.array(SocialFields).max(6).optional(),
 });
 const ReminderFields = z.object({ title: z.string().trim().min(1).max(200), detail: z.string().max(2000).nullable(), dueDate: Date10 });
 
@@ -227,6 +282,11 @@ app.post('/api/whatsapp/commit', async (c) => {
                     timeline: z.string().max(200).nullable(),
                 }),
                 suggestedReminders: z.array(ReminderFields).max(10),
+                customerUpdates: z.object({ company: Str(120), jobTitle: Str(120), birthday: Str(10) }),
+                socialProfiles: z.array(SocialFields).max(6),
+                people: z.array(PersonFields.omit({ email: true, linkedCustomerId: true }).extend({ isProspect: z.boolean() })).max(15),
+                importantDates: z.array(z.object({ label: z.string().max(160), kind: DateKind, date: z.string().max(10), yearly: z.boolean(), personName: Str(120) })).max(15),
+                services: z.array(z.object({ type: ServiceType, title: z.string().max(160), details: Details, notes: Str(4000) })).max(6),
                 candidates: z
                     .array(z.object({ customerId: z.string(), fullName: z.string(), phone: z.string().nullable(), confidence: z.number(), why: z.string() }))
                     .max(10),
@@ -235,9 +295,36 @@ app.post('/api/whatsapp/commit', async (c) => {
             newCustomerName: z.string().max(120).nullable(),
             applyFacts: z.boolean(),
             reminders: z.array(ReminderFields).max(10),
+            consentGiven: z.boolean(),
+            consentMethod: Str(200),
+            createCustomersFor: z.array(z.string().max(120)).max(15),
         })
         .parse(await c.req.json());
     return c.json(await commitWhatsApp(body));
+});
+
+// ---------- After-sales: consent, people, dates, services, research ----------
+
+app.post('/api/customers/:id/consent', async (c) => {
+    const { given, method } = z.object({ given: z.boolean(), method: z.string().max(200).optional() }).parse(await c.req.json());
+    return c.json(await setConsent(c.req.param('id'), given, method));
+});
+app.post('/api/customers/:id/people', async (c) => c.json(await addPerson(c.req.param('id'), PersonFields.parse(await c.req.json()))));
+app.patch('/api/customers/:id/people/:pid', async (c) => c.json(await updatePerson(c.req.param('id'), c.req.param('pid'), PersonFields.partial().parse(await c.req.json()))));
+app.delete('/api/customers/:id/people/:pid', async (c) => c.json(await deletePerson(c.req.param('id'), c.req.param('pid'))));
+app.post('/api/customers/:id/dates', async (c) => c.json(await addDate(c.req.param('id'), DateFields.parse(await c.req.json()))));
+app.patch('/api/customers/:id/dates/:did', async (c) => c.json(await updateDate(c.req.param('id'), c.req.param('did'), DateFields.partial().parse(await c.req.json()))));
+app.delete('/api/customers/:id/dates/:did', async (c) => c.json(await deleteDate(c.req.param('id'), c.req.param('did'))));
+app.post('/api/customers/:id/services', async (c) => c.json(await addService(c.req.param('id'), ServiceFields.parse(await c.req.json()))));
+app.patch('/api/customers/:id/services/:sid', async (c) => c.json(await updateService(c.req.param('id'), c.req.param('sid'), ServiceFields.partial().parse(await c.req.json()))));
+app.delete('/api/customers/:id/services/:sid', async (c) => c.json(await deleteService(c.req.param('id'), c.req.param('sid'))));
+app.get('/api/services', async (c) => {
+    const status = z.enum(['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED']).optional().catch(undefined).parse(c.req.query('status'));
+    return c.json(await listServices(status));
+});
+app.post('/api/customers/:id/research', async (c) => {
+    z.object({ topic: z.literal('COMPANY') }).parse(await c.req.json());
+    return c.json(await researchCompany(c.req.param('id')));
 });
 
 // Built web app (vite build -> dist/web), with SPA fallback.

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { Customer, CustomerInput, CustomerStatus, Purpose, Residency } from '../../../src/shared/types';
+import type { Customer, CustomerInput, CustomerStatus, Purpose, Residency, SocialProfile } from '../../../src/shared/types';
 import { Segmented } from '../pages/NewBooking';
 import { BEDROOMS, ChipToggles, SEGMENT_OPTS, TagInput } from './crm';
 import { ErrorNote, Icon, Spinner } from './ui';
@@ -8,6 +8,15 @@ const num = (s: string): number | null => {
   const n = Number(s.replace(/[^\d]/g, ''));
   return s.trim() && Number.isFinite(n) ? n : null;
 };
+export function detectPlatform(url: string): SocialProfile['platform'] {
+  const u = url.toLowerCase();
+  if (u.includes('linkedin.')) return 'LINKEDIN';
+  if (u.includes('instagram.') || u.includes('instagr.am')) return 'INSTAGRAM';
+  if (u.includes('facebook.') || u.includes('fb.com') || u.includes('fb.me')) return 'FACEBOOK';
+  return 'OTHER';
+}
+const PLATFORM_LABEL = { LINKEDIN: 'LinkedIn', INSTAGRAM: 'Instagram', FACEBOOK: 'Facebook', OTHER: 'Link' } as const;
+
 const money = (n: number | null) => (n === null ? '' : n.toLocaleString('en-SG'));
 
 export function CustomerForm({
@@ -41,6 +50,10 @@ export function CustomerForm({
   const [timeline, setTimeline] = useState(initial?.preferences.timeline ?? '');
   const [prefNotes, setPrefNotes] = useState(initial?.preferences.notes ?? '');
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [company, setCompany] = useState(initial?.company ?? '');
+  const [jobTitle, setJobTitle] = useState(initial?.jobTitle ?? '');
+  const [dob, setDob] = useState(initial?.dateOfBirth ?? '');
+  const [socials, setSocials] = useState<string[]>(initial?.socialProfiles.map((x) => x.url) ?? []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
@@ -79,6 +92,13 @@ export function CustomerForm({
           notes: t(prefNotes),
         },
         tags,
+        company: t(company),
+        jobTitle: t(jobTitle),
+        dateOfBirth: dob || null,
+        socialProfiles: socials
+          .map((u) => u.trim())
+          .filter(Boolean)
+          .map((u) => ({ platform: detectPlatform(u), url: /^https?:\/\//i.test(u) ? u : `https://${u}` })),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -105,6 +125,42 @@ export function CustomerForm({
             <span>Email</span>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
           </label>
+          <label className="field">
+            <span>Company</span>
+            <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. DBS Bank" />
+          </label>
+          <label className="field">
+            <span>Job title</span>
+            <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="e.g. Vice President, Treasury" />
+          </label>
+          <label className="field">
+            <span>Date of birth</span>
+            <input type="date" value={dob} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setDob(e.target.value)} />
+          </label>
+          <div className="field span-2">
+            <span>Social profiles</span>
+            <div className="social-rows">
+              {socials.map((u, i) => (
+                <div key={i} className="social-row">
+                  <span className="social-plat">{PLATFORM_LABEL[detectPlatform(u)]}</span>
+                  <input
+                    type="url"
+                    inputMode="url"
+                    value={u}
+                    onChange={(e) => setSocials(socials.map((x, j) => (j === i ? e.target.value : x)))}
+                    placeholder="https://www.linkedin.com/in/…"
+                  />
+                  <button type="button" className="icon-btn" onClick={() => setSocials(socials.filter((_, j) => j !== i))} aria-label="Remove link">
+                    <Icon name="close" size={13} />
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="link-btn" onClick={() => setSocials([...socials, ''])}>
+                <Icon name="plus" size={12} /> Add profile link
+              </button>
+              <small>Links only; Copilot doesn't read these pages. Paste a screenshot of their profile in Import screenshots to extract details (with consent).</small>
+            </div>
+          </div>
           <label className="field">
             <span>Source</span>
             <input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Showflat walk-in, referral, WhatsApp…" list="cust-sources" />

@@ -1,18 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReminderItem } from '../../../src/shared/types';
 import { listReminders, updateReminder } from '../api';
-import { OriginBadge, REMINDERS_CHANGED } from '../components/crm';
+import { askCopilot, OriginBadge, REMINDERS_CHANGED } from '../components/crm';
+import { DATE_ICON } from '../components/family';
 import { ErrorNote, Icon, Spinner } from '../components/ui';
 import { dueLabel, formatDateShort } from '../format';
 import { SnoozeDone } from './CustomerPage';
 
-type Origin = 'ALL' | 'AI' | 'AGENT' | 'DEAL';
+type Origin = 'ALL' | 'AI' | 'AGENT' | 'DEAL' | 'DATE';
 const ORIGINS: [Origin, string][] = [
   ['ALL', 'All'],
   ['AI', 'AI'],
   ['AGENT', 'You'],
   ['DEAL', 'Deal deadlines'],
+  ['DATE', 'Dates'],
 ];
+
+function wishesPrompt(r: ReminderItem): string {
+  const rel = r.relationLabel ?? r.title.match(/\(([^)]+)\)/)?.[1];
+  if (r.dateKind === 'ANNIVERSARY') return `Draft a short anniversary message from Rachel to ${r.customerName}`;
+  if (r.personName) return `Draft a short birthday message from Rachel to ${r.personName} (${rel ?? 'family'} of ${r.customerName})`;
+  return `Draft a short birthday message from Rachel to ${r.customerName}`;
+}
 
 const GROUPS: [string, string, (d: number) => boolean][] = [
   ['overdue', 'Overdue', (d) => d < 0],
@@ -94,13 +103,18 @@ export function Reminders() {
               </div>
               <ul className="rem-list">
                 {rows.map((r) => (
-                  <li key={r.id} className={key === 'overdue' ? 'is-overdue' : key === 'today' ? 'is-today' : ''}>
+                  <li key={r.id} className={`${key === 'overdue' ? 'is-overdue' : key === 'today' ? 'is-today' : ''}${r.kind === 'IMPORTANT_DATE' ? ' is-date' : ''}`}>
+                    {r.kind === 'IMPORTANT_DATE' && (
+                      <span className={`date-icon k-${(r.dateKind ?? 'CUSTOM').toLowerCase()}`}>
+                        <Icon name={DATE_ICON[r.dateKind ?? 'CUSTOM']} size={16} />
+                      </span>
+                    )}
                     <div className="rem-main">
                       <span className="rem-title">
                         {r.kind === 'DEAL_DEADLINE' && r.dealId ? <a href={`#/deals/${r.dealId}`}>{r.title}</a> : r.title}
                         <OriginBadge origin={r.origin} />
                       </span>
-                      <a className="rem-cust" href={`#/customers/${r.customerId}`}>
+                      <a className="rem-cust" href={`#/customers/${r.customerId}${r.kind === 'IMPORTANT_DATE' ? '?tab=family' : ''}`}>
                         <Icon name="user" size={12} /> {r.customerName}
                       </a>
                       {r.detail && <span className="cell-sub">{r.detail}</span>}
@@ -111,6 +125,12 @@ export function Reminders() {
                     </div>
                     {r.kind === 'REMINDER' ? (
                       <SnoozeDone r={r} onPatch={(p) => patch(r, p as { status?: 'DONE'; dueDate?: string })} />
+                    ) : r.kind === 'IMPORTANT_DATE' ? (
+                      (r.dateKind === 'BIRTHDAY' || r.dateKind === 'ANNIVERSARY') && (
+                        <button className="btn btn-sm btn-secondary" onClick={() => askCopilot(wishesPrompt(r))}>
+                          <Icon name="spark" size={13} /> Send wishes
+                        </button>
+                      )
                     ) : (
                       r.dealId && (
                         <a className="btn btn-sm btn-secondary" href={`#/deals/${r.dealId}`}>

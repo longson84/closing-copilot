@@ -267,8 +267,157 @@ wong = [
     ("W", "14:57", "Good, thanks."),
 ]
 
+GOH = ("Goh Boon Kiat", "+65 8352 9146", "GB", (200, 140, 70))  # phone matches seed.json
+
+goh_1 = [
+    chip("Today"),
+    ("G", "19:02", "Hi Rachel, Boon Kiat here. Hope you're well! Need your help on our Kingsmere Park unit #03-07."),
+    ("R", "19:05", "Hi Mr Goh! Of course, what's up?"),
+    ("G", "19:08", "We're moving to my wife's parents' place nearby for a while, so we want to rent out our unit from Jan 2027."),
+    ("G", "19:09", "Can you help us find a tenant? Thinking of asking around S$6,800 per month, available from 1 Jan 2027."),
+    ("R", "19:12", "Sure! S$6,800/month is reasonable for Kingsmere Park. I'll list the unit this week."),
+    ("G", "19:14", "Thanks. Unit is quite bare now, need light furnishing: curtains, fridge, washer, beds. Budget around S$15k. You know any vendor?"),
+    ("R", "19:16", "Yes, I have a few reliable vendors. I'll send you their contacts on Tuesday."),
+    ("G", "19:18", "Also, how do I declare the rental income for tax ah? First time doing this."),
+    ("R", "19:21", "You declare it in your income tax return. Since the rent starts in 2027, it goes into YA2028. I'll send you a checklist."),
+]
+
+goh_2 = [
+    chip("Today"),
+    ("G", "19:24", "Great. Sorry ah, very busy month for us."),
+    ("G", "19:25", "Michelle's birthday is next month, 12 Nov, want to surprise her. Then our wedding anniversary on 3 Dec."),
+    ("G", "19:26", "And Ethan starts Primary 1 at Kingsmere Primary in Jan 2027. He only turns 7 on 3 March but already so excited."),
+    ("R", "19:29", "Wah, busy but happy! How's Michelle doing at Harbourline Bank? And Chloe must be 4 already?"),
+    ("G", "19:31", "Yes Chloe is 4 now, very cheeky. Michelle still at Harbourline Bank. I'm now Engineering Director at Meridian Microsystems, more meetings than engineering haha"),
+    ("R", "19:33", "Congrats! Btw your defects liability period ends 19 Nov, let me know if anything needs fixing before the tenant moves in."),
+    ("G", "19:35", "Good reminder. Thanks a lot Rachel, really appreciate it!"),
+    ("R", "19:36", "Anytime! I'll list the unit this week and send you the vendor contacts on Tue 20 Oct."),
+]
+
+
+# ---------------------------------------------------------------- generic professional profile page
+P_BG = (238, 236, 232)
+P_ACCENT = (122, 62, 140)   # plum - deliberately not any real network's brand colour
+P_CARD = (255, 255, 255)
+
+
+def render_profile(filename):
+    img = Image.new("RGB", (W, H), P_BG)
+    d = ImageDraw.Draw(img)
+    status_bar(d, "20:05")
+    # app bar
+    y = STATUS_H
+    d.rectangle([0, y, W, y + 130], fill=(255, 255, 255))
+    d.text((40, y + 65), "ProNet profile — DEMO", font=font(46, True), fill=P_ACCENT, anchor="lm")
+    d.line([(0, y + 129), (W, y + 129)], fill=DIVIDER, width=2)
+    # url bar
+    y += 130
+    d.rectangle([0, y, W, y + 90], fill=(246, 246, 246))
+    d.rounded_rectangle([40, y + 14, W - 40, y + 76], 31, fill=(255, 255, 255), outline=DIVIDER, width=2)
+    d.text((W // 2, y + 45), "pronet.example/in/gohboonkiat", font=font(32), fill=META, anchor="mm")
+    y += 90
+
+    X0, X1 = 0, W
+    PX = 48
+    # top card: banner + avatar + name
+    banner_h = 120
+    d.rectangle([X0, y, X1, y + banner_h], fill=(196, 176, 206))
+    r = 120
+    ax, ay = PX + r, y + banner_h + 10
+    card_top = y + banner_h
+    # card body measured later; draw white panel big enough
+    d.rectangle([X0, card_top, X1, card_top + 640], fill=P_CARD)
+    d.ellipse([ax - r - 8, ay - r - 8, ax + r + 8, ay + r + 8], fill=(255, 255, 255))
+    d.ellipse([ax - r, ay - r, ax + r, ay + r], fill=(200, 140, 70))
+    d.text((ax, ay), "GB", font=font(90, True), fill=(255, 255, 255), anchor="mm")
+    ty = ay + r + 30
+    d.text((PX, ty), "Goh Boon Kiat", font=font(62, True), fill=TEXT)
+    ty += 80
+    for line in wrap("Engineering Director at Meridian Microsystems", font(42), W - 2 * PX):
+        d.text((PX, ty), line, font=font(42), fill=TEXT)
+        ty += 54
+    ty += 6
+    d.text((PX, ty), "Singapore", font=font(36), fill=META)
+    ty += 50
+    d.text((PX, ty), "pronet.example/in/gohboonkiat", font=font(36), fill=P_ACCENT)
+    ty += 50
+    d.text((PX, ty), "500+ connections", font=font(36, True), fill=P_ACCENT)
+    ty += 66
+    bw = (W - 2 * PX - 30) // 2
+    d.rounded_rectangle([PX, ty, PX + bw, ty + 90], 45, fill=P_ACCENT)
+    d.text((PX + bw // 2, ty + 45), "Connect", font=font(40, True), fill=(255, 255, 255), anchor="mm")
+    d.rounded_rectangle([PX + bw + 30, ty, W - PX, ty + 90], 45, outline=P_ACCENT, width=4, fill=P_CARD)
+    d.text((PX + bw + 30 + bw // 2, ty + 45), "Message", font=font(40, True), fill=P_ACCENT, anchor="mm")
+    ty += 90 + 30
+    d.rectangle([0, ty, W, H], fill=P_BG)
+    y = ty + 20
+
+    def section(title, y, body_fn):
+        top = y
+        d.rectangle([0, top, W, top + 2000], fill=P_CARD)  # trimmed by next fill
+        d.text((PX, top + 30), title, font=font(46, True), fill=TEXT)
+        end = body_fn(top + 104)
+        if end + 30 < H:
+            d.rectangle([0, end + 30, W, H], fill=P_BG)
+        return end + 30 + 20
+
+    F_BODY = font(38)
+    def about(y):
+        txt = ("Engineering leader with 20+ years in semiconductors and embedded systems. "
+               "I lead the chip design and validation teams at Meridian Microsystems across Singapore and Penang. "
+               "Husband, father of two, weekend cyclist.")
+        for line in wrap(txt, F_BODY, W - 2 * PX):
+            d.text((PX, y), line, font=F_BODY, fill=TEXT)
+            y += 50
+        return y
+
+    def entries(items):
+        def fn(y):
+            for i, (logo, title, org, dates) in enumerate(items):
+                d.rounded_rectangle([PX, y, PX + 100, y + 100], 14, fill=(225, 220, 230))
+                d.text((PX + 50, y + 50), logo, font=font(40, True), fill=P_ACCENT, anchor="mm")
+                tx = PX + 130
+                d.text((tx, y), title, font=font(40, True), fill=TEXT)
+                d.text((tx, y + 52), org, font=F_BODY, fill=TEXT)
+                d.text((tx, y + 100), dates, font=font(34), fill=META)
+                y += 162
+                if i < len(items) - 1:
+                    d.line([(tx, y - 12), (W - PX, y - 12)], fill=DIVIDER, width=2)
+            return y - 30
+        return fn
+
+    y = section("About", y, about)
+    y = section("Experience", y, entries([
+        ("MM", "Engineering Director", "Meridian Microsystems", "Jan 2019 – Present · Singapore"),
+        ("ND", "Senior Engineering Manager", "Northpoint Devices Pte Ltd", "2010 – 2018 · Singapore"),
+        ("LC", "IC Design Engineer", "Lumen Circuits Pte Ltd", "2003 – 2010 · Singapore"),
+    ]))
+    y = section("Education", y, entries([
+        ("NU", "National University of Singapore", "B.Eng. Electrical Engineering", "1999 – 2003"),
+    ]))
+    # bottom tab bar (generic text labels)
+    nav = H - 190
+    if y > nav:
+        raise SystemExit(f"{filename}: overflows by {y - nav}px")
+    d.rectangle([0, nav, W, H], fill=(255, 255, 255))
+    d.line([(0, nav), (W, nav)], fill=DIVIDER, width=2)
+    labels = ["Home", "Network", "Post", "Alerts", "Jobs"]
+    for i, lab in enumerate(labels):
+        cx = int(W * (i + 0.5) / len(labels))
+        col = P_ACCENT if lab == "Network" else META
+        d.rounded_rectangle([cx - 22, nav + 26, cx + 22, nav + 70], 10, outline=col, width=4)
+        d.text((cx, nav + 104), lab, font=font(30), fill=col, anchor="mm")
+    d.rounded_rectangle([W // 2 - 200, H - 38, W // 2 + 200, H - 26], 6, fill=TEXT)
+    path = os.path.join(OUT, filename)
+    img.save(path, optimize=True)
+    print("wrote", path, f"(free space {nav - y}px)")
+
+
 if __name__ == "__main__":
     render("chat-new-lead-kelvin-1.png", KELVIN, kelvin_1, "10:29")
     render("chat-new-lead-kelvin-2.png", KELVIN, kelvin_2, "10:30")
     render("chat-existing-priya.png", PRIYA, priya, "09:26")
     render("chat-investor-mr-wong.png", WONG, wong, "14:58")
+    render("chat-aftersales-goh-1.png", GOH, goh_1, "19:37")
+    render("chat-aftersales-goh-2.png", GOH, goh_2, "19:37")
+    render_profile("profile-goh-professional.png")

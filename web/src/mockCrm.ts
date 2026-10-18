@@ -1,5 +1,11 @@
 // Dev-only CRM fixtures for VITE_MOCK=1. All people, numbers and chats are fictional.
 import type {
+  AfterSalesService,
+  DateInput,
+  ImportantDate,
+  Person,
+  PersonInput,
+  ServiceInput,
   Customer,
   CustomerDetail,
   CustomerInput,
@@ -13,7 +19,7 @@ import type {
   WhatsAppAnalysis,
   WhatsAppCommit,
 } from '../../src/shared/types';
-import { daysBetween, todayISO } from './format';
+import { daysBetween, nextOccurrence, relationLabel, todayISO, turnsAge } from './format';
 import { addDays, customers, deals, MOCK_PROJECTS, sleep, summary } from './mock';
 
 const T = todayISO();
@@ -43,6 +49,10 @@ function blank(id: string, fullName: string, extra: Partial<Customer>): Customer
     budgetMaxSgd: null,
     preferences: { segments: [], areas: [], bedrooms: [], executiveCondo: null, timeline: null, notes: null },
     tags: [],
+    company: null,
+    jobTitle: null,
+    consent: { givenAt: null, method: null },
+    socialProfiles: [],
     createdAt: now,
     updatedAt: now,
     ...extra,
@@ -211,6 +221,63 @@ const matches: Record<string, ProjectMatch[]> = {
   ],
 };
 
+// ---------- Family, dates, after-sales (Ahmad bin Ismail, c5, has given consent) ----------
+
+Object.assign(customers.c5, {
+  company: 'Keppel Offshore & Marine (mock)',
+  jobTitle: 'Senior project engineer',
+  consent: { givenAt: iso(addDays(T, -40)), method: 'Verbal, at the Tembusu Grand showflat' },
+  socialProfiles: [{ platform: 'LINKEDIN', url: 'https://www.linkedin.com/in/example-ahmad' }],
+});
+Object.assign(customers.c6, { company: 'DBS Bank (mock)', jobTitle: 'Treasury analyst' });
+const pnow = iso(addDays(T, -40));
+const yearsAgo = (n: number, offsetDays: number) => {
+  const d = addDays(T, offsetDays);
+  return `${Number(d.slice(0, 4)) - n}${d.slice(4)}`;
+};
+const people: Record<string, Person[]> = {
+  c5: [
+    { id: 'p-1', customerId: 'c5', name: 'Siti Aminah', relation: 'SPOUSE', relationLabel: 'Wife', birthday: '--02-14', company: 'Raffles Hospital (mock)', jobTitle: 'Nurse manager', school: null, phone: '+65 9666 7001', email: null, notes: 'Decides on interiors. Prefers calls after 7pm.', linkedCustomerId: null, source: 'MANUAL', createdAt: pnow, updatedAt: pnow },
+    { id: 'p-2', customerId: 'c5', name: 'Irfan Ahmad', relation: 'CHILD', relationLabel: 'Son', birthday: yearsAgo(7, 5), company: null, jobTitle: null, school: 'Tao Nan School (P1 next year)', phone: null, email: null, notes: 'Loves football.', linkedCustomerId: null, source: 'MANUAL', createdAt: pnow, updatedAt: pnow },
+    { id: 'p-3', customerId: 'c5', name: 'Aisyah Ahmad', relation: 'CHILD', relationLabel: 'Daughter', birthday: yearsAgo(4, 120), company: null, jobTitle: null, school: 'PCF Sparkletots', phone: null, email: null, notes: null, linkedCustomerId: null, source: 'WHATSAPP_AI', createdAt: pnow, updatedAt: pnow },
+    { id: 'p-4', customerId: 'c5', name: 'Rajesh Kumar', relation: 'ADVISOR', relationLabel: 'Conveyancing lawyer', birthday: null, company: 'Kumar & Tan LLC (mock)', jobTitle: 'Partner', school: null, phone: '+65 6222 1100', email: 'rajesh@example.com', notes: 'Handled the Tembusu Grand conveyancing.', linkedCustomerId: null, source: 'MANUAL', createdAt: pnow, updatedAt: pnow },
+    { id: 'p-5', customerId: 'c5', name: 'Hafiz Ismail', relation: 'SIBLING', relationLabel: 'Younger brother', birthday: null, company: null, jobTitle: null, school: null, phone: '+65 9001 2345', email: null, notes: 'Looking for a 2BR resale near Bedok.', linkedCustomerId: 'c8', source: 'WHATSAPP_AI', createdAt: pnow, updatedAt: pnow },
+  ],
+};
+const dates: Record<string, ImportantDate[]> = {
+  c5: [
+    { id: 'dt-1', customerId: 'c5', personId: null, serviceId: null, kind: 'ANNIVERSARY', label: 'Wedding anniversary', date: yearsAgo(12, 26), yearly: true, remindDaysBefore: 7, source: 'MANUAL', createdAt: pnow },
+    { id: 'dt-2', customerId: 'c5', personId: 'p-2', serviceId: null, kind: 'SCHOOL', label: 'Irfan starts Primary 1', date: `${Number(T.slice(0, 4)) + 1}-01-02`, yearly: false, remindDaysBefore: 14, source: 'MANUAL', createdAt: pnow },
+    { id: 'dt-3', customerId: 'c5', personId: null, serviceId: 's-1', kind: 'LEASE', label: 'Trilliant lease ends', date: addDays(T, 70), yearly: false, remindDaysBefore: 60, source: 'SYSTEM', createdAt: pnow },
+    { id: 'dt-4', customerId: 'c5', personId: null, serviceId: 's-2', kind: 'TAX', label: 'File Form B (rental income)', date: `${Number(T.slice(0, 4)) + 1}-04-18`, yearly: false, remindDaysBefore: 14, source: 'MANUAL', createdAt: pnow },
+  ],
+};
+const services: Record<string, AfterSalesService[]> = {
+  c5: [
+    { id: 's-1', customerId: 'c5', dealId: null, property: 'The Tampines Trilliant #08-11', type: 'TENANCY', title: 'Tenancy follow-up', status: 'IN_PROGRESS', details: { tenantName: 'Mr & Mrs Lim', tenantPhone: '+65 8123 9090', monthlyRentSgd: 4200, depositSgd: 8400, leaseStart: addDays(T, -295), leaseEnd: addDays(T, 70), stampDutyPaid: true }, notes: 'Tenant wants to renew for 1 year if rent stays under S$4,300.', createdAt: pnow, updatedAt: pnow },
+    { id: 's-2', customerId: 'c5', dealId: null, property: 'The Tampines Trilliant #08-11', type: 'TAX', title: 'File rental income tax', status: 'OPEN', details: { taxYear: `YA${Number(T.slice(0, 4)) + 1}`, taxType: 'Rental income (Form B/B1)', annualRentSgd: 50400, filedOn: null }, notes: 'Collect agent fee and repair receipts for deductions.', createdAt: pnow, updatedAt: pnow },
+    { id: 's-3', customerId: 'c5', dealId: 'd-1005', property: 'Tembusu Grand #16-01', type: 'FURNISHING', title: 'Furnish the unit', status: 'OPEN', details: { budgetSgd: 45000, vendor: 'Ethan Interiors (mock)', scope: 'Kitchen cabinets, wardrobes, lighting' }, notes: null, createdAt: pnow, updatedAt: pnow },
+  ],
+};
+
+/** Derived (SYSTEM) dates: birthdays from people and handover anniversaries from collected keys. */
+function derivedDates(id: string): ImportantDate[] {
+  const out: ImportantDate[] = [];
+  for (const p of people[id] ?? [])
+    if (p.birthday)
+      out.push({ id: `bd-${p.id}`, customerId: id, personId: p.id, serviceId: null, kind: 'BIRTHDAY', label: `${p.name.split(' ')[0]}'s birthday`, date: p.birthday, yearly: true, remindDaysBefore: 3, source: 'SYSTEM', createdAt: p.createdAt });
+  const c = customers[id];
+  if (c?.dateOfBirth && c.consent.givenAt)
+    out.push({ id: `bd-${id}`, customerId: id, personId: null, serviceId: null, kind: 'BIRTHDAY', label: `${c.fullName.split(' ')[0]}'s birthday`, date: c.dateOfBirth, yearly: true, remindDaysBefore: 3, source: 'SYSTEM', createdAt: c.createdAt });
+  for (const d of deals.filter((x) => x.customerId === id)) {
+    const keys = d.stages.find((s) => s.key === 'KEYS')?.completedAt;
+    if (keys)
+      out.push({ id: `ho-${d.id}`, customerId: id, personId: null, serviceId: null, kind: 'HANDOVER', label: `${d.project} handover anniversary`, date: keys, yearly: true, remindDaysBefore: 7, source: 'SYSTEM', createdAt: keys });
+  }
+  return out;
+}
+const allDates = (id: string) => [...(dates[id] ?? []), ...derivedDates(id)];
+
 function cfind(id: string): Customer {
   const c = customers[id];
   if (!c) throw new Error('Customer not found.');
@@ -230,6 +297,9 @@ function crmDetail(id: string): CustomerDetail {
       .map((m) => ({ ...m, project: MOCK_PROJECTS.find((p) => p.id === m.projectId)! }))
       .filter((m) => m.project),
     deals: deals.filter((d) => d.customerId === id).map(summary),
+    people: people[id] ?? [],
+    dates: allDates(id),
+    services: services[id] ?? [],
   });
 }
 
@@ -385,6 +455,38 @@ export async function listReminders(): Promise<ReminderItem[]> {
       dealId: d.id,
     });
   }
+  for (const c of Object.values(customers)) {
+    for (const d of allDates(c.id)) {
+      const next = nextOccurrence(d.date, d.yearly);
+      if (!next) continue;
+      const days = daysBetween(T, next);
+      if (days < 0 || days > Math.max(30, d.remindDaysBefore)) continue;
+      const person = d.personId ? (people[c.id] ?? []).find((p) => p.id === d.personId) : null;
+      const rel = person ? (person.relationLabel ?? relationLabel[person.relation]).toLowerCase() : null;
+      const age = d.kind === 'BIRTHDAY' ? turnsAge(d.date) : null;
+      const title =
+        d.kind === 'BIRTHDAY'
+          ? `${person ? `${person.name} (${rel})` : c.fullName} ${age ? `turns ${age}` : 'birthday'}`
+          : d.kind === 'ANNIVERSARY' && d.yearly && /^\d{4}/.test(d.date)
+            ? `${d.label} (${Number(next.slice(0, 4)) - Number(d.date.slice(0, 4))} years)`
+            : d.label;
+      items.push({
+        kind: 'IMPORTANT_DATE',
+        id: `${d.id}:${next}`,
+        customerId: c.id,
+        customerName: c.fullName,
+        title,
+        detail: null,
+        dueDate: next,
+        daysLeft: days,
+        origin: 'DATE',
+        dateKind: d.kind,
+        personName: person?.name ?? null,
+        status: 'OPEN',
+        dealId: null,
+      });
+    }
+  }
   return items.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
 
@@ -463,6 +565,17 @@ export async function analyzeWhatsApp(files: File[]): Promise<WhatsAppAnalysis> 
       { title: 'Send stack 08 and 3BR + study prices', detail: 'Promised in the chat to revert by tomorrow.', dueDate: addDays(T, 1) },
       { title: 'Hold a unit for Marcus before month end', detail: 'Check booking slots with the developer sales team.', dueDate: addDays(T, 4) },
     ],
+    customerUpdates: { company: 'DBS Bank', jobTitle: 'Vice President, Treasury', birthday: '1991-11-02' },
+    people: [
+      { name: 'Jasmine Lee', relation: 'SPOUSE', relationLabel: 'Wife', birthday: null, company: 'MOE', jobTitle: 'Primary school teacher', school: null, phone: null, notes: 'Wants a 3BR + study for the baby.', isProspect: false },
+      { name: 'Kevin Lee', relation: 'SIBLING', relationLabel: 'Younger brother', birthday: null, company: null, jobTitle: null, school: null, phone: '+65 9188 4411', notes: 'Getting married next year, looking for a 2BR.', isProspect: true },
+    ],
+    importantDates: [
+      { label: 'Baby due', kind: 'CUSTOM', date: `${Number(T.slice(0, 4)) + 1}-05-15`, yearly: false, personName: 'Jasmine Lee' },
+      { label: 'Wedding anniversary', kind: 'ANNIVERSARY', date: '2019-11-23', yearly: true, personName: null },
+    ],
+    services: [{ type: 'OTHER', title: 'Sell the Marine Parade HDB flat', details: {}, notes: 'Completion in March; needs an HDB agent referral.' }],
+    socialProfiles: [{ platform: 'LINKEDIN', url: 'https://www.linkedin.com/in/example-marcus-lee' }],
     candidates: [
       { customerId: 'c6', fullName: 'Marcus Lee', phone: '+65 9734 2210', confidence: 0.96, why: 'Phone number in the chat header matches exactly.' },
       { customerId: 'c8', fullName: 'Daniel Koh', phone: '+65 9011 7788', confidence: 0.12, why: 'Also a prospect for a 3BR, but the name and phone differ.' },
@@ -508,7 +621,123 @@ export async function commitWhatsApp(body: WhatsAppCommit): Promise<CustomerDeta
     if (f.executiveCondo !== null) c.preferences.executiveCondo = f.executiveCondo;
     if (f.timeline) c.preferences.timeline = f.timeline;
   }
+  const now2 = new Date().toISOString();
+  if (body.consentGiven && !c.consent.givenAt) c.consent = { givenAt: now2, method: body.consentMethod };
+  const cu = a.customerUpdates;
+  if (cu.company) c.company = cu.company;
+  if (cu.jobTitle) c.jobTitle = cu.jobTitle;
+  if (cu.birthday && /^\d{4}/.test(cu.birthday)) c.dateOfBirth = cu.birthday;
+  for (const sp of a.socialProfiles ?? []) if (!c.socialProfiles.some((x) => x.url === sp.url)) c.socialProfiles.push(sp);
+  const canKeep = !!c.consent.givenAt;
+  if (canKeep)
+    for (const p of a.people) {
+      let linked: string | null = null;
+      if (body.createCustomersFor.includes(p.name)) {
+        linked = `c${Object.keys(customers).length + 1}`;
+        customers[linked] = blank(linked, p.name, { phone: p.phone, source: `Referral from ${c.fullName}` });
+      }
+      (people[id] ??= []).push({ id: nid('p'), customerId: id, name: p.name, relation: p.relation, relationLabel: p.relationLabel, birthday: p.birthday, company: p.company, jobTitle: p.jobTitle, school: p.school, phone: p.phone, email: null, notes: p.notes, linkedCustomerId: linked, source: 'WHATSAPP_AI', createdAt: now2, updatedAt: now2 });
+    }
+  for (const d of a.importantDates) {
+    if (d.personName && !canKeep) continue;
+    const pid = d.personName ? (people[id] ?? []).find((p) => p.name === d.personName)?.id ?? null : null;
+    (dates[id] ??= []).push({ id: nid('dt'), customerId: id, personId: pid, serviceId: null, kind: d.kind, label: d.label, date: d.date, yearly: d.yearly, remindDaysBefore: 7, source: 'WHATSAPP_AI', createdAt: now2 });
+  }
+  for (const sv of a.services)
+    (services[id] ??= []).push({ id: nid('s'), customerId: id, dealId: null, property: null, type: sv.type, title: sv.title, status: 'OPEN', details: sv.details, notes: sv.notes, createdAt: now2, updatedAt: now2 });
   for (const r of body.reminders)
     reminders.push({ id: nid('r'), customerId: id, ...r, origin: 'AI', status: 'OPEN', noteId: note.id, createdAt: note.createdAt, completedAt: null });
+  return crmDetail(id);
+}
+
+// ---------- People / dates / services / consent / research ----------
+
+export async function addPerson(id: string, input: PersonInput): Promise<CustomerDetail> {
+  await sleep(250);
+  if (!cfind(id).consent.givenAt) throw new Error('Record consent before storing family or contact details.');
+  const now = new Date().toISOString();
+  (people[id] ??= []).push({ ...input, id: nid('p'), customerId: id, source: 'MANUAL', createdAt: now, updatedAt: now });
+  return crmDetail(id);
+}
+export async function updatePerson(id: string, pid: string, input: Partial<PersonInput>): Promise<CustomerDetail> {
+  await sleep(200);
+  const p = (people[id] ?? []).find((x) => x.id === pid);
+  if (p) Object.assign(p, input, { updatedAt: new Date().toISOString() });
+  return crmDetail(id);
+}
+export async function deletePerson(id: string, pid: string): Promise<CustomerDetail> {
+  await sleep(200);
+  people[id] = (people[id] ?? []).filter((x) => x.id !== pid);
+  dates[id] = (dates[id] ?? []).filter((x) => x.personId !== pid);
+  return crmDetail(id);
+}
+export async function addDate(id: string, input: DateInput): Promise<CustomerDetail> {
+  await sleep(200);
+  (dates[id] ??= []).push({ ...input, id: nid('dt'), customerId: id, source: 'MANUAL', createdAt: new Date().toISOString() });
+  return crmDetail(id);
+}
+export async function updateDate(id: string, did: string, input: Partial<DateInput>): Promise<CustomerDetail> {
+  await sleep(200);
+  const d = (dates[id] ?? []).find((x) => x.id === did);
+  if (d) Object.assign(d, input);
+  return crmDetail(id);
+}
+export async function deleteDate(id: string, did: string): Promise<CustomerDetail> {
+  await sleep(200);
+  dates[id] = (dates[id] ?? []).filter((x) => x.id !== did);
+  return crmDetail(id);
+}
+export async function addService(id: string, input: ServiceInput): Promise<CustomerDetail> {
+  await sleep(250);
+  const now = new Date().toISOString();
+  const sid = nid('s');
+  (services[id] ??= []).push({ ...input, id: sid, customerId: id, createdAt: now, updatedAt: now });
+  const end = input.type === 'TENANCY' ? input.details.leaseEnd : null;
+  if (typeof end === 'string' && end)
+    (dates[id] ??= []).push({ id: nid('dt'), customerId: id, personId: null, serviceId: sid, kind: 'LEASE', label: 'Lease ends', date: end, yearly: false, remindDaysBefore: 60, source: 'SYSTEM', createdAt: now });
+  return crmDetail(id);
+}
+export async function updateService(id: string, sid: string, input: Partial<ServiceInput>): Promise<CustomerDetail> {
+  await sleep(200);
+  const sv = (services[id] ?? []).find((x) => x.id === sid);
+  if (sv) Object.assign(sv, input, { updatedAt: new Date().toISOString() });
+  return crmDetail(id);
+}
+export async function deleteService(id: string, sid: string): Promise<CustomerDetail> {
+  await sleep(200);
+  services[id] = (services[id] ?? []).filter((x) => x.id !== sid);
+  return crmDetail(id);
+}
+export async function setConsent(id: string, given: boolean, method?: string): Promise<CustomerDetail> {
+  await sleep(250);
+  cfind(id).consent = given ? { givenAt: new Date().toISOString(), method: method ?? null } : { givenAt: null, method: null };
+  return crmDetail(id);
+}
+export async function listServices(): Promise<Array<AfterSalesService & { customerName: string }>> {
+  await sleep(250);
+  return Object.entries(services).flatMap(([cid, list]) =>
+    list.filter((s) => s.status === 'OPEN' || s.status === 'IN_PROGRESS').map((s) => ({ ...s, customerName: customers[cid]?.fullName ?? 'Unknown' })),
+  );
+}
+export async function researchCompany(id: string): Promise<CustomerDetail> {
+  await sleep(2200);
+  const c = cfind(id);
+  if (!c.consent.givenAt) throw new Error('Record consent first.');
+  if (!c.company) throw new Error('Add the company first.');
+  (notes[id] ??= []).unshift({
+    id: nid('n-web'),
+    customerId: id,
+    kind: 'THOUGHT',
+    text: `${c.company} is a large Singapore employer in its sector. Recent news mentions a new project pipeline and a hiring push for engineers, which suggests stable income for ${c.fullName.split(' ')[0]}. Good conversation openers: the company's recent contract wins and its move to new offices in the west.`,
+    source: 'WEB_AI',
+    keyPoints: ['Stable employer with a strong order book', 'Moving offices to Jurong in 2027 (commute angle for future purchases)', 'Mention the recent contract win as an ice-breaker'],
+    sources: [
+      { title: 'Company announcement (mock)', url: 'https://example.com/news/contract-win' },
+      { title: 'Business Times article (mock)', url: 'https://example.com/bt/expansion' },
+    ],
+    transcript: [],
+    occurredAt: T,
+    createdAt: new Date().toISOString(),
+  });
   return crmDetail(id);
 }

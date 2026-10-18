@@ -26,7 +26,26 @@ type IconName =
   | 'share'
   | 'offline'
   | 'search'
-  | 'building';
+  | 'building'
+  | 'cake'
+  | 'rings'
+  | 'key'
+  | 'school'
+  | 'lease'
+  | 'tax'
+  | 'star'
+  | 'home'
+  | 'sofa'
+  | 'wrench'
+  | 'bank'
+  | 'people'
+  | 'globe'
+  | 'linkedin'
+  | 'instagram'
+  | 'facebook'
+  | 'shield'
+  | 'edit'
+  | 'more';
 
 const paths: Record<IconName, ReactNode> = {
   pipeline: <path d="M4 6h16M4 12h10M4 18h6" />,
@@ -48,6 +67,25 @@ const paths: Record<IconName, ReactNode> = {
   back: <path d="M15 6l-6 6 6 6" />,
   user: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0" />,
   camera: <path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1zM12 17a4 4 0 100-8 4 4 0 000 8z" />,
+  cake: <path d="M4 21h16M5 21v-7a2 2 0 012-2h10a2 2 0 012 2v7M5 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0M12 12V8M12 5.5c.8-.8.8-1.7 0-2.5-.8.8-.8 1.7 0 2.5z" />,
+  rings: <path d="M9 20a5.5 5.5 0 100-11 5.5 5.5 0 000 11zM15 20a5.5 5.5 0 100-11 5.5 5.5 0 000 11zM9 9l1.5-4h3L15 9" />,
+  key: <path d="M8 15a4 4 0 100-8 4 4 0 000 8zM11 11h10M17 11v3M20 11v2" />,
+  school: <path d="M2 9l10-5 10 5-10 5L2 9zM6 11v5c3 2 9 2 12 0v-5M22 9v6" />,
+  lease: <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM9 13h6M9 17h4M14 3v5h5" />,
+  tax: <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6M9 16h3" />,
+  star: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z" />,
+  home: <path d="M3 11l9-7 9 7M5 9.5V20h5v-6h4v6h5V9.5" />,
+  sofa: <path d="M4 12V9a3 3 0 013-3h10a3 3 0 013 3v3M2 14a2 2 0 014 0v1h12v-1a2 2 0 014 0v4H2v-4zM5 18v2M19 18v2" />,
+  wrench: <path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6z" />,
+  bank: <path d="M3 9l9-5 9 5M4 10h16M6 10v8M10 10v8M14 10v8M18 10v8M3 20h18" />,
+  people: <path d="M9 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM2 20a7 7 0 0114 0M16 4.5a3.5 3.5 0 010 6.5M18 13.5a6 6 0 014 6" />,
+  globe: <path d="M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z" />,
+  linkedin: <path d="M4 4h16v16H4zM8 10v6M8 7.5v.01M12 16v-6M12 13a2 2 0 014 0v3" />,
+  instagram: <path d="M7 3h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7a4 4 0 014-4zM12 16a4 4 0 100-8 4 4 0 000 8zM17.5 6.5v.01" />,
+  facebook: <path d="M14 21v-8h3l.5-3.5H14V7.5c0-1 .5-1.5 1.5-1.5H18V3h-3a4 4 0 00-4 4v2.5H8V13h3v8" />,
+  shield: <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6l8-3zM9 12l2 2 4-4" />,
+  more: <path d="M5 12h.01M12 12h.01M19 12h.01" strokeWidth={3} />,
+  edit: <path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" />,
   search: <path d="M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4" />,
   building: <path d="M4 21V5a1 1 0 011-1h9a1 1 0 011 1v16M15 10h4a1 1 0 011 1v10M3 21h18M8 8h3M8 12h3M8 16h3" />,
   download: <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />,

@@ -1,4 +1,4 @@
-import type { CustomerStatus, DocType, NoteKind, Purpose, Residency, Risk, StageKey } from '../../src/shared/types';
+import type { AfterSalesService, CustomerStatus, DateKind, DocType, NoteKind, Purpose, Relation, Residency, Risk, ServiceType, StageKey } from '../../src/shared/types';
 
 export const formatSGD = (n: number) =>
   `${n < 0 ? '-' : ''}S$${Math.abs(n).toLocaleString('en-SG', { maximumFractionDigits: 0 })}`;
@@ -109,6 +109,9 @@ const toolLabels: Record<string, string> = {
 
 export function humanizeTool(name: string): string {
   if (toolLabels[name]) return toolLabels[name];
+  if (/_(people|dates)$/.test(name)) return 'Reading family & dates';
+  if (/_services$/.test(name)) return 'Checking after-sales';
+  if (/research/.test(name)) return 'Searching the web';
   const s = name.replace(/[_-]+/g, ' ').trim();
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -185,4 +188,99 @@ export function dueLabel(iso: string): string {
   if (d === 1) return 'Tomorrow';
   if (d < 7) return `In ${d} days`;
   return formatDateShort(iso);
+}
+
+// ---------- Relationships, dates, after-sales ----------
+
+export const relationLabel: Record<Relation, string> = {
+  SPOUSE: 'Spouse',
+  CHILD: 'Child',
+  PARENT: 'Parent',
+  SIBLING: 'Sibling',
+  OTHER_RELATIVE: 'Relative',
+  COLLEAGUE: 'Colleague',
+  FRIEND: 'Friend',
+  ADVISOR: 'Advisor',
+  TENANT: 'Tenant',
+  OTHER: 'Other',
+};
+
+export const dateKindLabel: Record<DateKind, string> = {
+  BIRTHDAY: 'Birthday',
+  ANNIVERSARY: 'Anniversary',
+  HANDOVER: 'Handover',
+  SCHOOL: 'School',
+  LEASE: 'Lease',
+  TAX: 'Tax',
+  CUSTOM: 'Other',
+};
+
+export const serviceTypeLabel: Record<ServiceType, string> = {
+  RENTAL: 'Rental',
+  FURNISHING: 'Furnishing',
+  TENANCY: 'Tenancy',
+  TAX: 'Tax',
+  DEFECTS: 'Defects',
+  REFINANCING: 'Refinancing',
+  OTHER: 'Other',
+};
+
+export const serviceStatusLabel: Record<AfterSalesService['status'], string> = {
+  OPEN: 'Open',
+  IN_PROGRESS: 'In progress',
+  DONE: 'Done',
+  CANCELLED: 'Cancelled',
+};
+
+/** Month-day of "YYYY-MM-DD" or "--MM-DD". */
+function md(date: string): [number, number] | null {
+  const m = date.match(/^(?:\d{4}|--)-?(\d{2})-(\d{2})$/) ?? date.match(/^--(\d{2})-(\d{2})$/);
+  return m ? [Number(m[1]), Number(m[2])] : null;
+}
+
+export const yearOf = (date: string): number | null => (/^\d{4}-/.test(date) ? Number(date.slice(0, 4)) : null);
+
+/** Next time a date falls on or after today. One-off dates return themselves (even if past). */
+export function nextOccurrence(date: string, yearly: boolean, from = todayISO()): string | null {
+  if (!yearly && /^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  const p = md(date);
+  if (!p) return null;
+  const y = Number(from.slice(0, 4));
+  const pad = (n: number) => String(n).padStart(2, '0');
+  let cand = `${y}-${pad(p[0])}-${pad(p[1])}`;
+  if (cand < from) cand = `${y + 1}-${pad(p[0])}-${pad(p[1])}`;
+  return cand;
+}
+
+/** "3 Mar 2019", or "3 Mar" when the year is unknown. */
+export function formatDayMonth(date: string): string {
+  const p = md(date);
+  if (!p) return date;
+  const y = yearOf(date);
+  const d = new Date(y ?? 2000, p[0] - 1, p[1]);
+  return d.toLocaleDateString('en-SG', y ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' });
+}
+
+/** Age the person turns on their next birthday, if the year is known. */
+export function turnsAge(birthday: string): number | null {
+  const y = yearOf(birthday);
+  const next = nextOccurrence(birthday, true);
+  return y && next ? Number(next.slice(0, 4)) - y : null;
+}
+
+export function currentAge(birthday: string): number | null {
+  const y = yearOf(birthday);
+  if (!y) return null;
+  const next = nextOccurrence(birthday, true)!;
+  const turns = Number(next.slice(0, 4)) - y;
+  return next === todayISO() ? turns : turns - 1;
+}
+
+export function inDays(iso: string | null): string {
+  if (!iso) return '—';
+  const d = daysBetween(todayISO(), iso);
+  if (d === 0) return 'today';
+  if (d === 1) return 'tomorrow';
+  if (d < 0) return `${-d} days ago`;
+  return `in ${d} days`;
 }

@@ -72,3 +72,66 @@ Expected follow-ups:
 |---|---|
 | before Wed 21 Oct 2026 | Send Mr Wong the ABSD calculation (PR, 2nd property) |
 | Wed 21 Oct 2026, 7.30pm | Call Mr Wong to go through the numbers and shortlist units |
+
+## 4. `chat-aftersales-goh-1.png` + `chat-aftersales-goh-2.png`: existing client Goh Boon Kiat (after-sales)
+
+Both screenshots are from "Today". Image 1 covers the services he asks for. Image 2 covers family news and the closing follow-ups.
+
+- **Contact:** Goh Boon Kiat, +65 8352 9146. This number matches `seed.json`: GOH BOON KIAT, Kingsmere Park #03-07, keys collected 20 Nov 2025, status COMPLETED.
+- **Customer job:** Engineering Director at Meridian Microsystems.
+- **Context:** the family is moving to his wife's parents' place nearby for a while. They want to rent out the unit.
+
+**Services requested**
+
+| Service | Details |
+|---|---|
+| RENTAL | Find a tenant for Kingsmere Park #03-07. Asking rent S$6,800/month, available from 2027-01-01 |
+| FURNISHING | Light furnishing: curtains, fridge, washer and beds. Budget about S$15,000. He wants vendor recommendations |
+| TAX | How to declare rental income. Rachel says it goes in his income tax return under YA2028, because the rent starts in 2027. She will send a checklist |
+
+**People**
+
+| Name | Relation | Facts |
+|---|---|---|
+| Michelle Goh | spouse | Birthday `--11-12` (12 Nov; he wants to surprise her). Works at Harbourline Bank (fictional) |
+| Ethan Goh | child (son) | Birthday 2020-03-03: he turns 7 on 3 Mar 2027, so the birth year is derived. Starts Primary 1 at Kingsmere Primary (fictional) in Jan 2027 |
+| Chloe Goh | child (daughter) | Age 4 |
+
+**Dates**
+
+| Date | What |
+|---|---|
+| `--11-12` yearly | Michelle's birthday. Next one is 12 Nov 2026 |
+| `--12-03` yearly | Wedding anniversary |
+| `--03-03` yearly | Ethan's birthday (born 2020) |
+| 2027-01-04 (approx.) | Ethan starts Primary 1. The chat only says "Jan 2027"; 4 Jan 2027 is the first Monday |
+| 2027-01-01 | Unit available for tenancy |
+| 2026-11-19 | Defects liability period ends. Rachel mentions this; it also matches the seed README |
+
+**Expected follow-ups**
+
+| Date | Action |
+|---|---|
+| this week, by Sun 25 Oct 2026 | List Kingsmere Park #03-07 for rent at S$6,800/month, available 1 Jan 2027 |
+| Tue 20 Oct 2026 | Send Goh the contacts of furnishing vendors (budget about S$15k) |
+| no fixed date | Send Goh the rental-income tax checklist (YA2028) |
+| suggested, early Nov | Michelle's birthday on 12 Nov: a personal touch |
+| before 19 Nov 2026 | Check for any defects to report before the defects liability period ends |
+
+## 5. `profile-goh-professional.png`: generic professional-network profile (ProNet, DEMO)
+
+This is a made-up "ProNet profile — DEMO" page. It does not use any real network's design, brand or colours.
+
+- **URL:** `pronet.example/in/gohboonkiat`
+- **Name:** Goh Boon Kiat
+- **Headline:** "Engineering Director at Meridian Microsystems"
+- **Location:** Singapore
+- **About:** 20+ years in semiconductors and embedded systems. He leads chip design and validation teams in Singapore and Penang. Husband, father of two, weekend cyclist.
+- **Experience:**
+  - Engineering Director, Meridian Microsystems, Jan 2019 to present
+  - Senior Engineering Manager, Northpoint Devices Pte Ltd, 2010 to 2018
+  - IC Design Engineer, Lumen Circuits Pte Ltd, 2003 to 2010
+
+  All of these companies are fictional.
+- **Education:** National University of Singapore, B.Eng. Electrical Engineering, 1999 to 2003.
+- **Expected extraction:** company "Meridian Microsystems" and job title "Engineering Director". These match the chat, so the profile should be linked to the same customer.

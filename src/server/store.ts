@@ -1,7 +1,7 @@
 // Persistence: Firestore when FIRESTORE_DATABASE is set, otherwise in-memory (local dev, evals).
 
 import { Firestore } from '@google-cloud/firestore';
-import type { Customer, Deal, Note, ProjectMatch, Reminder } from '../shared/types.js';
+import type { AfterSalesService, Customer, Deal, ImportantDate, Note, Person, ProjectMatch, Reminder } from '../shared/types.js';
 
 /** The only place the full ID number exists. Never returned by the API. */
 export interface StoredCustomer extends Customer {
@@ -24,7 +24,18 @@ export interface Store {
     getReminder(id: string): Promise<Reminder | null>;
     saveReminder(reminder: Reminder): Promise<void>;
     isEmpty(): Promise<boolean>;
+    /** Per-customer records kept in their own collections. */
+    list<K extends Kind>(kind: K, customerId?: string): Promise<KindMap[K][]>;
+    save<K extends Kind>(kind: K, doc: KindMap[K]): Promise<void>;
+    remove(kind: Kind, id: string): Promise<void>;
 }
+
+interface KindMap {
+    people: Person;
+    dates: ImportantDate;
+    services: AfterSalesService;
+}
+type Kind = keyof KindMap;
 
 /** Records written before the CRM existed lack these fields. */
 export function withCrmDefaults(c: Partial<StoredCustomer> & { id: string; fullName: string }): StoredCustomer {
@@ -47,6 +58,10 @@ export function withCrmDefaults(c: Partial<StoredCustomer> & { id: string; fullN
         budgetMaxSgd: null,
         tags: [],
         matches: [],
+        company: null,
+        jobTitle: null,
+        socialProfiles: [],
+        consent: { givenAt: null, method: null },
         createdAt: now,
         updatedAt: now,
         ...c,
@@ -104,6 +119,17 @@ class MemoryStore implements Store {
     }
     async isEmpty() {
         return this.deals.size === 0;
+    }
+    private docs: { [K in Kind]: Map<string, KindMap[K]> } = { people: new Map(), dates: new Map(), services: new Map() };
+    async list<K extends Kind>(kind: K, customerId?: string) {
+        const all = [...(this.docs[kind] as Map<string, KindMap[K]>).values()];
+        return all.filter((d) => !customerId || d.customerId === customerId).map((d) => structuredClone(d));
+    }
+    async save<K extends Kind>(kind: K, doc: KindMap[K]) {
+        (this.docs[kind] as Map<string, KindMap[K]>).set(doc.id, structuredClone(doc));
+    }
+    async remove(kind: Kind, id: string) {
+        this.docs[kind].delete(id);
     }
 }
 
@@ -163,6 +189,17 @@ class FirestoreStore implements Store {
     async isEmpty() {
         const snap = await this.db.collection('deals').limit(1).get();
         return snap.empty;
+    }
+    async list<K extends Kind>(kind: K, customerId?: string) {
+        const col = this.db.collection(kind);
+        const snap = await (customerId ? col.where('customerId', '==', customerId) : col).get();
+        return snap.docs.map((d) => d.data() as KindMap[K]);
+    }
+    async save<K extends Kind>(kind: K, doc: KindMap[K]) {
+        await this.db.collection(kind).doc(doc.id).set(doc);
+    }
+    async remove(kind: Kind, id: string) {
+        await this.db.collection(kind).doc(id).delete();
     }
 }
 

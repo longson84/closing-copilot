@@ -3,6 +3,11 @@
 export type Residency = 'SC' | 'SPR' | 'FOREIGNER';
 export type Purpose = 'OWN_STAY' | 'INVESTMENT';
 
+export interface SocialProfile {
+    platform: 'LINKEDIN' | 'INSTAGRAM' | 'FACEBOOK' | 'OTHER';
+    url: string;
+}
+
 /** Where the customer is in the agent's funnel. BOOKED/AFTER_SALES are set by deals. */
 export type CustomerStatus = 'LEAD' | 'PROSPECT' | 'BOOKED' | 'AFTER_SALES' | 'LOST';
 
@@ -39,6 +44,12 @@ export interface Customer {
         notes: string | null;
     };
     tags: string[];
+    company: string | null;
+    jobTitle: string | null;
+    /** Links the agent recorded (not scraped). */
+    socialProfiles: SocialProfile[];
+    /** PDPA: consent to keep personal details about the customer's family and contacts. */
+    consent: { givenAt: string | null; method: string | null };
     createdAt: string; // ISO
     updatedAt: string; // ISO
 }
@@ -58,8 +69,10 @@ export interface Note {
     customerId: string;
     kind: NoteKind;
     text: string; // the agent's text, or the AI summary for WhatsApp notes
-    source: 'MANUAL' | 'WHATSAPP_AI';
-    keyPoints: string[]; // AI-extracted highlights (empty for manual notes)
+    source: 'MANUAL' | 'WHATSAPP_AI' | 'WEB_AI';
+    keyPoints: string[];
+    /** Web sources for WEB_AI notes (Google Search grounding). */
+    sources?: Array<{ title: string; url: string }>; // AI-extracted highlights (empty for manual notes)
     transcript: WhatsAppMessage[]; // WhatsApp only
     occurredAt: string | null; // YYYY-MM-DD the conversation happened, if known
     createdAt: string; // ISO
@@ -79,8 +92,83 @@ export interface Reminder {
 }
 
 /** One row on the reminders screen: a stored reminder, or a legal deadline computed from a deal. */
+// ---------- Relationships, important dates, after-sales ----------
+
+export type Relation =
+    | 'SPOUSE'
+    | 'CHILD'
+    | 'PARENT'
+    | 'SIBLING'
+    | 'OTHER_RELATIVE'
+    | 'COLLEAGUE'
+    | 'FRIEND'
+    | 'ADVISOR' // lawyer, banker, accountant…
+    | 'TENANT'
+    | 'OTHER';
+
+/** Someone in the customer's circle. */
+export interface Person {
+    id: string;
+    customerId: string;
+    name: string;
+    relation: Relation;
+    relationLabel: string | null; // free text, e.g. "Brother", "Conveyancing lawyer", "Elder son"
+    /** "YYYY-MM-DD", or "--MM-DD" when the year is unknown. */
+    birthday: string | null;
+    company: string | null;
+    jobTitle: string | null;
+    school: string | null;
+    phone: string | null;
+    email: string | null;
+    notes: string | null;
+    /** When this person is also a customer (e.g. a referred sibling). */
+    linkedCustomerId: string | null;
+    source: 'MANUAL' | 'WHATSAPP_AI';
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type DateKind = 'BIRTHDAY' | 'ANNIVERSARY' | 'HANDOVER' | 'SCHOOL' | 'LEASE' | 'TAX' | 'CUSTOM';
+
+export interface ImportantDate {
+    id: string;
+    customerId: string;
+    personId: string | null; // whose date it is (null = the customer)
+    serviceId: string | null; // set when it belongs to an after-sales service
+    kind: DateKind;
+    label: string; // "Wedding anniversary", "Ethan starts Primary 1", "Lease ends"
+    date: string; // YYYY-MM-DD, or --MM-DD for yearly dates with unknown year
+    yearly: boolean;
+    remindDaysBefore: number;
+    source: 'MANUAL' | 'WHATSAPP_AI' | 'SYSTEM';
+    createdAt: string;
+}
+
+export type ServiceType = 'RENTAL' | 'FURNISHING' | 'TENANCY' | 'TAX' | 'DEFECTS' | 'REFINANCING' | 'OTHER';
+
+export interface AfterSalesService {
+    id: string;
+    customerId: string;
+    dealId: string | null;
+    property: string | null; // e.g. "Aurelia Bay Residences #12-05"
+    type: ServiceType;
+    title: string;
+    status: 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
+    /**
+     * Type-specific fields (all optional), e.g.
+     * RENTAL: askingRentSgd, listedOn, availableFrom
+     * FURNISHING: budgetSgd, vendor, scope
+     * TENANCY: tenantName, tenantPhone, monthlyRentSgd, depositSgd, leaseStart, leaseEnd, stampDutyPaid
+     * TAX: taxYear, taxType ("Rental income (Form B/B1)" | "Property tax"), annualRentSgd, filedOn
+     */
+    details: Record<string, string | number | boolean | null>;
+    notes: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface ReminderItem {
-    kind: 'REMINDER' | 'DEAL_DEADLINE';
+    kind: 'REMINDER' | 'DEAL_DEADLINE' | 'IMPORTANT_DATE';
     id: string; // reminder id, or `${dealId}:${stageKey}`
     customerId: string;
     customerName: string;
@@ -88,7 +176,12 @@ export interface ReminderItem {
     detail: string | null;
     dueDate: string;
     daysLeft: number; // negative = overdue
-    origin: 'AI' | 'AGENT' | 'DEAL';
+    origin: 'AI' | 'AGENT' | 'DEAL' | 'DATE';
+    /** For IMPORTANT_DATE rows. */
+    dateKind?: DateKind;
+    personName?: string | null;
+    /** The person's relation to the customer in plain words, e.g. "wife", "son". */
+    relationLabel?: string | null;
     status: 'OPEN' | 'DONE' | 'DISMISSED';
     dealId: string | null;
 }
@@ -123,6 +216,9 @@ export interface CustomerDetail {
     reminders: Reminder[]; // open first, by due date
     matches: Array<ProjectMatch & { project: Project }>;
     deals: DealSummary[];
+    people: Person[];
+    dates: ImportantDate[]; // incl. derived ones (birthdays from people, handover anniversaries) with source SYSTEM
+    services: AfterSalesService[];
 }
 
 /** Editable fields for creating/updating a customer by hand (all optional on update). */
@@ -140,7 +236,15 @@ export interface CustomerInput {
     budgetMaxSgd?: number | null;
     preferences?: Partial<Customer['preferences']>;
     tags?: string[];
+    company?: string | null;
+    jobTitle?: string | null;
+    dateOfBirth?: string | null;
+    socialProfiles?: SocialProfile[];
 }
+
+export type PersonInput = Omit<Person, 'id' | 'customerId' | 'source' | 'createdAt' | 'updatedAt'>;
+export type DateInput = Omit<ImportantDate, 'id' | 'customerId' | 'source' | 'createdAt'>;
+export type ServiceInput = Omit<AfterSalesService, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>;
 
 export interface SuggestedReminder {
     title: string;
@@ -171,6 +275,25 @@ export interface WhatsAppAnalysis {
         timeline: string | null;
     };
     suggestedReminders: SuggestedReminder[];
+    /** Details about the customer themself. */
+    customerUpdates: { company: string | null; jobTitle: string | null; birthday: string | null };
+    /** People mentioned (family, colleagues, advisors). `isProspect` = may buy/rent themselves (e.g. a referral). */
+    /** Profile screenshots (LinkedIn/Instagram/Facebook) are read the same way; social links seen are returned here. */
+    socialProfiles: SocialProfile[];
+    people: Array<{
+        name: string;
+        relation: Relation;
+        relationLabel: string | null;
+        birthday: string | null;
+        company: string | null;
+        jobTitle: string | null;
+        school: string | null;
+        phone: string | null;
+        notes: string | null;
+        isProspect: boolean;
+    }>;
+    importantDates: Array<{ label: string; kind: DateKind; date: string; yearly: boolean; personName: string | null }>;
+    services: Array<{ type: ServiceType; title: string; details: Record<string, string | number | boolean | null>; notes: string | null }>;
     /** Existing customers that may be this contact, best first. */
     candidates: Array<{ customerId: string; fullName: string; phone: string | null; confidence: number; why: string }>;
 }
@@ -181,6 +304,11 @@ export interface WhatsAppCommit {
     newCustomerName: string | null; // required when customerId is null
     applyFacts: boolean; // copy facts into the customer profile (only fills/updates mentioned fields)
     reminders: SuggestedReminder[]; // the ones the agent kept (possibly edited)
+    /** Required to store people/dates about relatives; recorded on the customer. */
+    consentGiven: boolean;
+    consentMethod: string | null; // e.g. "Verbal, on WhatsApp 18 Oct 2026"
+    /** Names (from analysis.people) to also create as their own customers (leads), linked both ways. */
+    createCustomersFor: string[];
 }
 
 /** A Singapore new-launch project from the catalog (src/server/data/projects.json). */
@@ -321,6 +449,13 @@ export interface FollowUp {
  *   DELETE /api/customers/:id/matches/:projectId -> CustomerDetail
  *   POST   /api/whatsapp/analyze (multipart: files = 1..5 screenshots) -> WhatsAppAnalysis
  *   POST   /api/whatsapp/commit  WhatsAppCommit -> CustomerDetail
+ *   POST   /api/customers/:id/people  PersonInput -> CustomerDetail ;  PATCH/DELETE /api/customers/:id/people/:personId
+ *   POST   /api/customers/:id/dates   DateInput -> CustomerDetail   ;  PATCH/DELETE /api/customers/:id/dates/:dateId
+ *   POST   /api/customers/:id/services ServiceInput -> CustomerDetail ; PATCH/DELETE /api/customers/:id/services/:serviceId
+ *   POST   /api/customers/:id/research { topic: 'COMPANY' } -> CustomerDetail (adds a WEB_AI THOUGHT note with sources; needs consent + company)
+ *   POST   /api/customers/:id/consent { given: boolean, method?: string } -> CustomerDetail
+ *   GET    /api/services?status=OPEN -> Array<AfterSalesService & { customerName: string }>
+ *   GET /api/reminders now also returns IMPORTANT_DATE rows (birthdays, anniversaries, handover, lease, tax) within the window, each remindDaysBefore ahead
  *   POST   /api/bookings also accepts optional customerId (book an existing CRM customer)
  */
 export type ChatEvent =

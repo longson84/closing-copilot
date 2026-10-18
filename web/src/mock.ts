@@ -81,6 +81,10 @@ function cust(
     budgetMaxSgd: null,
     preferences: { segments: [], areas: [], bedrooms: [], executiveCondo: null, timeline: null, notes: null },
     tags: [],
+    company: null,
+    jobTitle: null,
+    consent: { givenAt: null, method: null },
+    socialProfiles: [],
     createdAt: now,
     updatedAt: now,
     id,
@@ -138,7 +142,8 @@ export const customers: Record<string, Customer> = {
     nationality: 'Singapore Citizen',
     sex: 'M',
     phone: '+65 9666 7000',
-    profile: { purpose: 'OWN_STAY', propertiesOwned: 0, household: 'Married, 3 teenage children' },
+    email: 'ahmad.ismail@example.com',
+    profile: { purpose: 'INVESTMENT', propertiesOwned: 1, household: 'Married, 2 young children' },
   }),
 };
 
@@ -476,7 +481,13 @@ export async function* streamChat(body: { message: string; dealId?: string }): A
   let tool = 'list_deals_needing_action';
   let reply =
     "Here's what needs your attention today:\n\n1. **Priya Raman — The Continuum #08-12**: stamp duty is **3 days overdue**. IRAS charges late-payment penalties, so collect the BSD + ABSD cheque today.\n2. **Tan Wei Ming — Lentor Hills #12-05**: the OTP spells the buyer's name *Tan Wei Meng*. Ask the developer's solicitor to correct it before the S&P is exercised.\n3. **Liu Jian — Grand Dunman #21-03**: CDD is due. Request proof of address for enhanced due diligence.\n\nWant me to draft the reminder to Priya?";
-  if (m.includes('stamp')) {
+  if (m.includes('birthday') || m.includes('anniversary')) {
+    tool = 'get_customer';
+    const to = body.message.match(/to ([^(]+?)(?: \(| *$)/)?.[1]?.trim() ?? 'them';
+    reply = m.includes('anniversary')
+      ? `Here's a warm note you can send:\n\n> Happy anniversary to you both! Wishing you many more happy years together, and lots of good memories in the new home. Warm regards, Rachel`
+      : `Here's a short message you can send:\n\n> Happy birthday, ${to.split(' ')[0]}! 🎂 Wishing you a fantastic year ahead. Hope the new home makes this one extra special. Rachel\n\nI kept it light and personal. Want a version for the parents instead?`;
+  } else if (m.includes('stamp')) {
     tool = 'calc_stamp_duty';
     reply =
       'For a **Singapore Citizen buying a first residential property** at S$1,688,000:\n\n- Buyer’s Stamp Duty (BSD): **S$59,920**\n- Additional Buyer’s Stamp Duty (ABSD): **S$0** (first property)\n- **Total payable: S$59,920**, due within 14 days of exercising the S&P.';
