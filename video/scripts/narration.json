@@ -1,0 +1,50 @@
+[
+ {
+  "id": "s1",
+  "text": "A Singapore property agent closing a new-launch condo juggles hard legal deadlines — S&P in three weeks, stamp duty in fourteen days — and every document has to match the buyer exactly. Miss one, and the buyer can lose a quarter of their booking fee. Today that lives in spreadsheets and WhatsApp."
+ },
+ {
+  "id": "s2a",
+  "text": "Closing Copilot is built on Google Cloud. The agent snaps the buyer's NRIC — even a tilted phone photo."
+ },
+ {
+  "id": "s2b",
+  "text": "Document AI reads it, Gemini structures it, and the customer record is created with the ID masked everywhere. Due-diligence is recorded, and the image is never stored."
+ },
+ {
+  "id": "s3a",
+  "text": "When the developer's lawyer sends the Sale & Purchase Agreement, Copilot cross-checks it against the verified buyer."
+ },
+ {
+  "id": "s3b",
+  "text": "Here it caught a missing letter in the name and two swapped digits in the NRIC — before the buyer signs. Gemini reads; plain code compares, so every flag is explainable."
+ },
+ {
+  "id": "s4a",
+  "text": "Most selling happens on WhatsApp. The agent screenshots the chat; Gemini turns it into a customer — budget, family, preferences — plus dated follow-ups for every promise made."
+ },
+ {
+  "id": "s4b",
+  "text": "Nothing is saved until the agent confirms."
+ },
+ {
+  "id": "s4c",
+  "text": "Then Copilot matches him against twenty-four real 2025–26 launches: an EC in Pasir Ris that fits his family and budget."
+ },
+ {
+  "id": "s5a",
+  "text": "The relationship doesn't end at the keys. From a chat and a profile screenshot, Copilot built Mr Goh's circle — with his consent, as Singapore's PDPA requires — and his after-sales needs: finding a tenant, furnishing, declaring rental income."
+ },
+ {
+  "id": "s5b",
+  "text": "Birthdays, anniversaries, lease renewals and tax deadlines land in one reminders list, and Copilot drafts the message."
+ },
+ {
+  "id": "s6",
+  "text": "And when the agent just asks \"what do I need to do today\", the ADK agent checks deadlines, reminders and customer files through its tools — it never guesses a date, an amount or a stamp-duty figure; those come from code."
+ },
+ {
+  "id": "s7",
+  "text": "Gemini on Vertex AI with the Agent Development Kit, Document AI, Google Search grounding, Firestore and Cloud Run — evaluated end to end, seven out of seven cases passing. Closing Copilot: fewer missed deadlines, deeper relationships, more time with clients."
+ }
+]

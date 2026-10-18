@@ -5052,3 +5052,7 @@ li.locked .mention,
   line-height: 1.2;
   text-align: center;
 }
+
+/* A document superseded by a corrected version: kept for the record, visually de-emphasised. */
+.doc-replaced { opacity: 0.6; }
+.doc-status-replaced { color: var(--muted, #6b7671); font-weight: 500; }

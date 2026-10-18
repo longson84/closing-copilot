@@ -128,6 +128,10 @@ export async function createBooking(input: BookingInput): Promise<DealDetail> {
 export async function addDocument(dealId: string, file: BookingInput['file']) {
     const { deal, customer } = await load(dealId);
     const document = await analyzeDealDocument(file, deal, customer);
+    // A clean replacement (e.g. the corrected S&P) supersedes earlier versions of the same document.
+    if (document.type !== 'OTHER' && document.checks.every((c) => c.status === 'OK')) {
+        for (const d of deal.documents) if (d.type === document.type && !d.supersededBy) d.supersededBy = document.id;
+    }
     deal.documents.push(document);
     await store.saveDeal(deal);
     return { deal: await getDetail(dealId), document };
@@ -163,7 +167,7 @@ export async function dealContext(dealId: string) {
             daysLeftToNextDeadline: daysLeft,
             nextDeadline: dueDate,
             stages: deal.stages.map((s) => ({ key: s.key, label: s.label, dueDate: s.dueDate, completedAt: s.completedAt, description: s.description })),
-            documents: deal.documents.map((d) => ({ type: d.type, fileName: d.fileName, summary: d.summary, checks: d.checks })),
+            documents: deal.documents.map((d) => ({ type: d.type, fileName: d.fileName, summary: d.summary, checks: d.checks, replacedByNewerVersion: !!d.supersededBy })),
         },
         project: getProject(deal.projectId),
         stampDuty:

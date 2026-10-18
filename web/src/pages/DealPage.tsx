@@ -87,7 +87,7 @@ export function DealPage({ id, review }: { id: string; review: boolean }) {
 
   const { deal, customer, risk } = data;
   const docs = [...deal.documents].sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
-  const mismatches = deal.documents.flatMap((d) => d.checks.filter((c) => c.status === 'MISMATCH').map((c) => ({ d, c })));
+  const mismatches = deal.documents.filter((d) => !d.supersededBy).flatMap((d) => d.checks.filter((c) => c.status === 'MISMATCH').map((c) => ({ d, c })));
   const proj = deal.projectId ? catalog.find((p) => p.id === deal.projectId) : undefined;
   const projFacts = proj
     ? [

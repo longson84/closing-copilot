@@ -369,6 +369,8 @@ export interface DealDocument {
     summary: string;
     /** Stage this document is evidence for, if any. */
     suggestedStage: StageKey | null;
+    /** Set when a later document of the same type passed every check; its issues no longer count. */
+    supersededBy?: string | null;
 }
 
 export interface Deal {

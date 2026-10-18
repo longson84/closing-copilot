@@ -1,0 +1,132 @@
+1
+00:00:03,200 --> 00:00:07,916
+A Singapore property agent closing a new-launch condo juggles hard legal deadlines —
+
+2
+00:00:07,956 --> 00:00:10,691
+S&P in three weeks, stamp duty in fourteen days —
+
+3
+00:00:10,731 --> 00:00:13,522
+and every document has to match the buyer exactly.
+
+4
+00:00:13,562 --> 00:00:17,146
+Miss one, and the buyer can lose a quarter of their booking fee.
+
+5
+00:00:17,186 --> 00:00:19,750
+Today that lives in spreadsheets and WhatsApp.
+
+6
+00:00:21,223 --> 00:00:23,752
+Closing Copilot is built on Google Cloud.
+
+7
+00:00:23,792 --> 00:00:27,573
+The agent snaps the buyer's NRIC — even a tilted phone photo.
+
+8
+00:00:33,144 --> 00:00:39,743
+Document AI reads it, Gemini structures it, and the customer record is created with the ID masked everywhere.
+
+9
+00:00:39,783 --> 00:00:43,215
+Due-diligence is recorded, and the image is never stored.
+
+10
+00:00:44,305 --> 00:00:49,735
+When the developer's lawyer sends the Sale & Purchase Agreement, Copilot cross-checks it against the verified buyer.
+
+11
+00:00:50,275 --> 00:00:54,906
+Here it caught a missing letter in the name and two swapped digits in the NRIC —
+
+12
+00:00:54,946 --> 00:00:56,248
+before the buyer signs.
+
+13
+00:00:56,288 --> 00:00:59,985
+Gemini reads; plain code compares, so every flag is explainable.
+
+14
+00:01:05,318 --> 00:01:07,392
+Most selling happens on WhatsApp.
+
+15
+00:01:07,432 --> 00:01:09,377
+The agent screenshots the chat;
+
+16
+00:01:09,417 --> 00:01:11,490
+Gemini turns it into a customer —
+
+17
+00:01:11,530 --> 00:01:13,347
+budget, family, preferences —
+
+18
+00:01:13,387 --> 00:01:16,229
+plus dated follow-ups for every promise made.
+
+19
+00:01:21,668 --> 00:01:24,338
+Nothing is saved until the agent confirms.
+
+20
+00:01:27,641 --> 00:01:32,933
+Then Copilot matches him against twenty-four real 2025–26 launches:
+
+21
+00:01:32,973 --> 00:01:36,991
+an EC in Pasir Ris that fits his family and budget.
+
+22
+00:01:38,081 --> 00:01:40,727
+The relationship doesn't end at the keys.
+
+23
+00:01:40,767 --> 00:01:45,247
+From a chat and a profile screenshot, Copilot built Mr Goh's circle —
+
+24
+00:01:45,287 --> 00:01:48,391
+with his consent, as Singapore's PDPA requires —
+
+25
+00:01:48,431 --> 00:01:50,094
+and his after-sales needs:
+
+26
+00:01:50,134 --> 00:01:53,632
+finding a tenant, furnishing, declaring rental income.
+
+27
+00:01:54,172 --> 00:02:01,402
+Birthdays, anniversaries, lease renewals and tax deadlines land in one reminders list, and Copilot drafts the message.
+
+28
+00:02:02,492 --> 00:02:10,428
+And when the agent just asks "what do I need to do today", the ADK agent checks deadlines, reminders and customer files through its tools —
+
+29
+00:02:10,468 --> 00:02:13,757
+it never guesses a date, an amount or a stamp-duty figure;
+
+30
+00:02:13,797 --> 00:02:14,962
+those come from code.
+
+31
+00:02:20,970 --> 00:02:28,328
+Gemini on Vertex AI with the Agent Development Kit, Document AI, Google Search grounding, Firestore and Cloud Run —
+
+32
+00:02:28,368 --> 00:02:31,867
+evaluated end to end, seven out of seven cases passing.
+
+33
+00:02:31,907 --> 00:02:37,400
+Closing Copilot: fewer missed deadlines, deeper relationships, more time with clients.
+

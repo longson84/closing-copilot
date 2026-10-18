@@ -4,11 +4,12 @@ import { docTypeLabel, formatDateTime, formatValue, humanizeField, stageShort } 
 import { Icon } from './ui';
 
 export function DocumentCard({ doc, fresh }: { doc: DealDocument; fresh?: boolean }) {
-  const issues = doc.checks.filter((c) => c.status !== 'OK');
-  const mismatches = doc.checks.filter((c) => c.status === 'MISMATCH');
+  const replaced = Boolean(doc.supersededBy);
+  const issues = replaced ? [] : doc.checks.filter((c) => c.status !== 'OK');
+  const mismatches = replaced ? [] : doc.checks.filter((c) => c.status === 'MISMATCH');
   const [open, setOpen] = useState(Boolean(fresh) || issues.length > 0);
   const fields = Object.entries(doc.extracted);
-  const tone = mismatches.length ? 'bad' : issues.length ? 'warn' : 'ok';
+  const tone = replaced ? 'replaced' : mismatches.length ? 'bad' : issues.length ? 'warn' : 'ok';
 
   return (
     <article className={`doc doc-${tone}${fresh ? ' fresh' : ''}`} id={`doc-${doc.id}`}>
@@ -23,7 +24,9 @@ export function DocumentCard({ doc, fresh }: { doc: DealDocument; fresh?: boolea
           </span>
         </span>
         <span className={`doc-status doc-status-${tone}`}>
-          {mismatches.length ? (
+          {replaced ? (
+            <>Replaced by a corrected version</>
+          ) : mismatches.length ? (
             <>
               <Icon name="alert" size={13} /> {mismatches.length} mismatch{mismatches.length > 1 ? 'es' : ''}
             </>

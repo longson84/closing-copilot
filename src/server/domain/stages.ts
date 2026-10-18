@@ -114,6 +114,6 @@ export function summarize(deal: Deal, customerName: string, today: string): Deal
         nextDueDate: dueDate,
         daysLeft,
         risk,
-        openIssues: deal.documents.flatMap((d) => d.checks).filter((c) => c.status !== 'OK').length,
+        openIssues: deal.documents.filter((d) => !d.supersededBy).flatMap((d) => d.checks).filter((c) => c.status !== 'OK').length,
     };
 }
