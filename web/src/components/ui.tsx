@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import type { Risk } from '../../../src/shared/types';
 import { riskLabel } from '../format';
 
@@ -20,7 +20,11 @@ type IconName =
   | 'meeting'
   | 'send'
   | 'back'
-  | 'user';
+  | 'user'
+  | 'camera'
+  | 'download'
+  | 'share'
+  | 'offline';
 
 const paths: Record<IconName, ReactNode> = {
   pipeline: <path d="M4 6h16M4 12h10M4 18h6" />,
@@ -41,6 +45,10 @@ const paths: Record<IconName, ReactNode> = {
   send: <path d="M4 12l16-8-6 16-2-7-8-1z" />,
   back: <path d="M15 6l-6 6 6 6" />,
   user: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0" />,
+  camera: <path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1zM12 17a4 4 0 100-8 4 4 0 000 8z" />,
+  download: <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />,
+  share: <path d="M12 15V3M8 7l4-4 4 4M6 11H5a1 1 0 00-1 1v8a1 1 0 001 1h14a1 1 0 001-1v-8a1 1 0 00-1-1h-1" />,
+  offline: <path d="M2 8.5a15 15 0 0120 0M5.5 12a10 10 0 0113 0M9 15.5a5 5 0 016 0M12 19.5v.01M3 3l18 18" />,
 };
 
 export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
@@ -116,7 +124,14 @@ export function Dropzone({
 }) {
   const [over, setOver] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
+  const pickFrom = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) onFile(f);
+    e.target.value = '';
+  };
   return (
+    <div className="picker">
     <div
       className={`dropzone${over ? ' over' : ''}${file ? ' has-file' : ''}${compact ? ' compact' : ''}${disabled ? ' disabled' : ''}`}
       onDragOver={(e) => {
@@ -165,6 +180,30 @@ export function Dropzone({
           <span>{hint}</span>
         </span>
       )}
+    </div>
+    {/* Phone: camera capture + file/WhatsApp picker instead of drag & drop. */}
+    <div className={`pick-mobile${compact ? ' compact' : ''}`}>
+      {file ? (
+        <div className="pick-file">
+          <Icon name="file" size={16} />
+          <span>
+            <strong>{file.name}</strong>
+            <small>{(file.size / 1024).toFixed(0)} KB</small>
+          </span>
+        </div>
+      ) : (
+        !compact && <p className="pick-hint">{hint}</p>
+      )}
+      <div className="pick-buttons">
+        <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={pickFrom} />
+        <button type="button" className="btn btn-primary btn-touch" disabled={disabled} onClick={() => camera.current?.click()}>
+          <Icon name="camera" size={18} /> {file ? 'Retake photo' : 'Take photo'}
+        </button>
+        <button type="button" className="btn btn-secondary btn-touch" disabled={disabled} onClick={() => input.current?.click()}>
+          <Icon name="upload" size={18} /> Choose file
+        </button>
+      </div>
+    </div>
     </div>
   );
 }

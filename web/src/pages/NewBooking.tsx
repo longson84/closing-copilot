@@ -168,7 +168,7 @@ export function NewBooking() {
             </div>
             <label className="field">
               <span>Properties already owned</span>
-              <input type="number" min={0} max={20} value={propertiesOwned} onChange={(e) => setPropertiesOwned(e.target.value)} />
+              <input type="number" inputMode="numeric" pattern="[0-9]*" min={0} max={20} value={propertiesOwned} onChange={(e) => setPropertiesOwned(e.target.value)} />
             </label>
             <label className="field span-2">
               <span>Household (optional)</span>

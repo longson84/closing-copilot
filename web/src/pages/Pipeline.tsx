@@ -72,7 +72,7 @@ export function Pipeline() {
         <div>
           <h1>{greeting}, Rachel</h1>
           <p className="page-sub">
-            {deals ? `${counts.active} active bookings between OTP and keys.` : 'Loading your bookings…'}
+            {deals ? `${counts.active} active bookings between OTP and keys.` : error ? 'Bookings are unavailable right now.' : 'Loading your bookings…'}
           </p>
         </div>
         <a className="btn btn-primary" href="#/new">
@@ -137,6 +137,7 @@ export function Pipeline() {
             )}
           </div>
         ) : (
+          <>
           <table className="deals">
             <thead>
               <tr>
@@ -197,6 +198,43 @@ export function Pipeline() {
               ))}
             </tbody>
           </table>
+          <ul className="deal-cards">
+            {rows.map((d) => (
+              <li key={d.id}>
+                <a className={`deal-card risk-card-${d.risk.toLowerCase()}`} href={`#/deals/${d.id}`}>
+                  <span className="deal-card-top">
+                    <span>
+                      <span className="cell-strong">{d.customerName}</span>
+                      <span className="cell-sub">
+                        {d.project}, {d.unit}
+                      </span>
+                    </span>
+                    <RiskBadge risk={d.risk} />
+                  </span>
+                  <span className="deal-card-stage">
+                    <StageMeter stage={d.currentStage} done={d.risk === 'DONE'} />
+                    <span>{d.risk === 'DONE' ? 'Keys collected' : d.currentStageLabel}</span>
+                  </span>
+                  <span className="deal-card-foot">
+                    {d.risk !== 'DONE' && (
+                      <span className={`due-chip due-${d.risk.toLowerCase()}`}>
+                        <Icon name="clock" size={13} />
+                        {d.nextDueDate ? `${formatDateShort(d.nextDueDate)} · ${daysLeftLabel(d.daysLeft)}` : 'Awaiting prior stage'}
+                      </span>
+                    )}
+                    <span className="tabular cell-sub">{formatSGD(d.price)}</span>
+                    {d.openIssues > 0 && (
+                      <span className="issue-count">
+                        <Icon name="alert" size={13} />
+                        {d.openIssues} {d.openIssues === 1 ? 'issue' : 'issues'}
+                      </span>
+                    )}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          </>
         )}
       </section>
     </div>
