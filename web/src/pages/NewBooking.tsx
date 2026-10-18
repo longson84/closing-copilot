@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react';
-import type { Purpose, Residency } from '../../../src/shared/types';
-import { createBooking } from '../api';
+import { useEffect, useState, type FormEvent } from 'react';
+import type { Project, Purpose, Residency } from '../../../src/shared/types';
+import { createBooking, listProjects } from '../api';
+import { ProjectCard } from '../components/ProjectCard';
+import { ProjectPicker, type ProjectChoice } from '../components/ProjectPicker';
 import { AiProgress, Dropzone, ErrorNote, Icon } from '../components/ui';
 import { formatSGD, todayISO } from '../format';
 import { navigate } from '../router';
@@ -10,6 +12,23 @@ const STEPS = ['Uploading ID securely…', 'Reading ID with Document AI…', 'Ex
 export function NewBooking() {
   const [file, setFile] = useState<File | null>(null);
   const [project, setProject] = useState('');
+  const [choice, setChoice] = useState<ProjectChoice>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
+  useEffect(() => {
+    listProjects()
+      .then((list) => {
+        setProjects(list);
+        const want = new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('project');
+        const hit = want ? list.find((x) => x.id === want) : undefined;
+        if (hit) setChoice((c) => c ?? hit);
+      })
+      .catch((e: Error) => setProjectsError(e.message))
+      .finally(() => setProjectsLoading(false));
+  }, []);
+  const selected = choice && choice !== 'other' ? choice : null;
+  const projectName = selected ? selected.name : choice === 'other' ? project.trim() : '';
   const [unit, setUnit] = useState('');
   const [price, setPrice] = useState('');
   const [otpDate, setOtpDate] = useState(todayISO());
@@ -26,7 +45,7 @@ export function NewBooking() {
   const priceNum = Number(price.replace(/[^\d]/g, ''));
   const missing = {
     file: !file,
-    project: !project.trim(),
+    project: !projectName,
     unit: !unit.trim(),
     price: !priceNum,
     otpDate: !otpDate,
@@ -39,7 +58,8 @@ export function NewBooking() {
     if (!valid || !file) return;
     const fd = new FormData();
     fd.append('file', file);
-    fd.append('project', project.trim());
+    if (selected) fd.append('projectId', selected.id);
+    fd.append('project', projectName);
     fd.append('unit', unit.trim());
     fd.append('price', String(priceNum));
     fd.append('otpDate', otpDate);
@@ -68,7 +88,7 @@ export function NewBooking() {
         <div className="card extracting">
           <h1 className="serif">Registering the booking</h1>
           <p className="page-sub">
-            {file?.name} · {project}, {unit}
+            {file?.name} · {projectName}, {unit}
           </p>
           <AiProgress steps={STEPS} />
           <p className="muted small">The full ID number is stored securely and shown masked everywhere in the app.</p>
@@ -111,10 +131,28 @@ export function NewBooking() {
             <h2>Purchase</h2>
           </div>
           <div className="form-grid pad">
-            <label className={`field span-2${inv('project')}`}>
-              <span>Project</span>
-              <input value={project} onChange={(e) => setProject(e.target.value)} placeholder="e.g. Lentor Hills Residences" />
-            </label>
+            <div className={`field span-2${inv('project')}`}>
+              <span id="project-label">Project</span>
+              <ProjectPicker
+                projects={projects}
+                loading={projectsLoading}
+                error={projectsError}
+                value={choice}
+                onChange={setChoice}
+                invalid={tried && missing.project}
+              />
+            </div>
+            {choice === 'other' && (
+              <label className={`field span-2${inv('project')}`}>
+                <span>Project name</span>
+                <input value={project} onChange={(e) => setProject(e.target.value)} placeholder="Type the project name" autoFocus />
+              </label>
+            )}
+            {selected && (
+              <div className="span-2">
+                <ProjectCard p={selected} />
+              </div>
+            )}
             <label className={`field${inv('unit')}`}>
               <span>Unit</span>
               <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="#12-05" />
@@ -128,7 +166,7 @@ export function NewBooking() {
                   const n = Number(e.target.value.replace(/[^\d]/g, ''));
                   setPrice(n ? n.toLocaleString('en-SG') : '');
                 }}
-                placeholder="1,688,000"
+                placeholder={selected?.priceFromSgd ? `from ${formatSGD(selected.priceFromSgd)}` : '1,688,000'}
               />
               {priceNum > 0 && <small>5% booking fee: {formatSGD(Math.round(priceNum * 0.05))}</small>}
             </label>

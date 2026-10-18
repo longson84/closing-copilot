@@ -23,6 +23,14 @@ export function formatDateShort(iso: string | null | undefined): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
+/** "2026-03" -> "Mar 2026", "2028" -> "2028". */
+export function formatMonth(ym: string | null | undefined): string {
+  if (!ym) return '—';
+  const m = ym.match(/^(\d{4})-(\d{2})/);
+  if (!m) return ym;
+  return new Date(Number(m[1]), Number(m[2]) - 1, 1).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+}
+
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
@@ -90,6 +98,7 @@ const toolLabels: Record<string, string> = {
   calc_stamp_duty: 'Calculating stamp duty',
   draft_customer_message: 'Drafting message',
   suggest_followups: 'Planning follow-ups',
+  search_projects: 'Searching projects',
   advance_stage: 'Updating stage',
   check_stage_document: 'Cross-checking document',
   extract_identity_document: 'Reading ID document',

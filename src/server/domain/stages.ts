@@ -51,7 +51,7 @@ export const STAGE_DEFS: StageDef[] = [
     {
         key: 'KEYS',
         label: 'Keys (TOP)',
-        description: 'Progress payments through construction; keys handed over at TOP.',
+        description: 'Progress payments through construction; keys handed over at TOP (due date is the expected TOP).',
     },
 ];
 
@@ -60,7 +60,11 @@ export function stageLabel(key: StageKey): string {
 }
 
 /** Recomputes every due date from the OTP date and the completion dates recorded so far. */
-export function buildStages(otpDate: string, completed: Partial<Record<StageKey, string | null>>): Stage[] {
+export function buildStages(
+    otpDate: string,
+    completed: Partial<Record<StageKey, string | null>>,
+    expectedTop: string | null = null,
+): Stage[] {
     const done = (k: StageKey) => completed[k] ?? null;
     const spaDelivered = done('SPA_DELIVERED');
     const exercised = done('SPA_EXERCISED');
@@ -71,7 +75,7 @@ export function buildStages(otpDate: string, completed: Partial<Record<StageKey,
         SPA_EXERCISED: addDays(spaDelivered ?? addDays(otpDate, SPA_DELIVERY_DAYS), EXERCISE_DAYS),
         STAMP_DUTY: exercised ? addDays(exercised, STAMP_DUTY_DAYS) : null,
         DOWNPAYMENT_15: addDays(otpDate, DOWNPAYMENT_WEEKS * 7),
-        KEYS: null,
+        KEYS: expectedTop,
     };
     return STAGE_DEFS.map((d) => ({ ...d, dueDate: due[d.key], completedAt: done(d.key) }));
 }

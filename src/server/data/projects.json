@@ -1,0 +1,655 @@
+[
+  {
+    "id": "thomson-reserve",
+    "name": "Thomson Reserve",
+    "developer": "Tamarind Development Pte Ltd (CapitaLand Development 50%, UOL Group 40%, Singapore Land Group 10%)",
+    "address": "Upper Thomson Road / Bright Hill Drive (former Thomson View Condominium)",
+    "district": "D20",
+    "segment": "RCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 1268,
+    "launchDate": "2026-10",
+    "expectedTop": "2030",
+    "priceFromSgd": 1544000,
+    "avgPsfSgd": null,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/thomson-reserve-first-mega-launch-eight-years-upper-thomson-priced-2608-psf",
+      "https://stackedhomes.com/thomson-reserve-launch-2608-psf/"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "the-serra-residences",
+    "name": "The Serra Residences",
+    "developer": "Far East Organization (with Far East Orchard)",
+    "address": "11 Bassein Road",
+    "district": "D11",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "Freehold",
+    "totalUnits": 133,
+    "launchDate": "2026-10",
+    "expectedTop": "2030",
+    "priceFromSgd": 2220000,
+    "avgPsfSgd": null,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://stackedhomes.com/the-serra-residences-price-review/",
+      "https://www.edgeprop.sg/property-news/why-far-east-organization-waited-16-years-launch-freehold-serra-residences-novena"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "lucerne-grand",
+    "name": "Lucerne Grand",
+    "developer": "City Developments Limited (CDL Polaris Properties Pte Ltd)",
+    "address": "Lakeside Drive",
+    "district": "D22",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 570,
+    "launchDate": "2026-10",
+    "expectedTop": null,
+    "priceFromSgd": 1498000,
+    "avgPsfSgd": 2480,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/lucerne-grand-614-sold-average-price-2480-psf",
+      "https://stackedhomes.com/new-570-unit-mixed-use-condo-launching-next-to-lakeside-mrt-lucerne-grand-starts-from-1-498m/"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "amberwood-at-holland",
+    "name": "Amberwood at Holland",
+    "developer": "Sim Lian Group",
+    "address": "Holland Link (Holland Plain)",
+    "district": "D10",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 212,
+    "launchDate": "2026-09",
+    "expectedTop": "2030-06",
+    "priceFromSgd": 2516000,
+    "avgPsfSgd": 3019,
+    "unitMix": [
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/amberwood-holland-sells-11-units-launch-weekend-averaging-3019-psf",
+      "https://edgeprop.sg/property-news/sim-lian-back-core-central-region-amberwood-holland-after-17-years"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "dunearn-house",
+    "name": "Dunearn House",
+    "developer": "Frasers Property, CSC Land Group and Sekisui House",
+    "address": "Dunearn Road (Bukit Timah Turf City)",
+    "district": "D11",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 380,
+    "launchDate": "2026-07",
+    "expectedTop": null,
+    "priceFromSgd": 1475000,
+    "avgPsfSgd": 3140,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/dunearn-house-sells-56-units-launch-weekend-average-3140-psf",
+      "https://www.frasersproperty.com/sg/press-releases/2026/07-jul/dunearn-house-sales"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "lentor-gardens-residences",
+    "name": "Lentor Gardens Residences",
+    "developer": "Kingsford Group",
+    "address": "Lentor Gardens (Lentor Hills estate)",
+    "district": "D26",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 499,
+    "launchDate": "2026-07",
+    "expectedTop": "2030-12",
+    "priceFromSgd": null,
+    "avgPsfSgd": 2350,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/lentor-gardens-residences-sells-54-units-launch-day-average-2350-psf",
+      "https://www.edgeprop.sg/property-news/kingsford-preview-lentor-gardens-residences-july-4-prices-averaging-2350-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "hudson-place-residences",
+    "name": "Hudson Place Residences",
+    "developer": "Qingjian Realty, Forsea Holdings, CYZ Land and Jianan Capital",
+    "address": "Media Circle (one-north)",
+    "district": "D5",
+    "segment": "RCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 327,
+    "launchDate": "2026-05",
+    "expectedTop": null,
+    "priceFromSgd": null,
+    "avgPsfSgd": 2458,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR",
+      "Penthouse"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/hudson-place-residences-sells-over-61-units-average-2458-psf-launch-weekend",
+      "https://stackedhomes.com/hudson-place-residences-sales-launch/"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "tengah-garden-residences",
+    "name": "Tengah Garden Residences",
+    "developer": "Hong Leong Holdings, GuocoLand and CSC Land Group (JV)",
+    "address": "Tengah Garden Avenue",
+    "district": "D24",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 863,
+    "launchDate": "2026-04",
+    "expectedTop": null,
+    "priceFromSgd": 980000,
+    "avgPsfSgd": 2120,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/tengah-garden-residences-99-sold-launch-average-price-2120-psf",
+      "https://stackedhomes.com/new-launch-condos-2026-singapore-complete-guide/"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "vela-bay",
+    "name": "Vela Bay",
+    "developer": "SingHaiyi Group and Chuan Capital",
+    "address": "Bayshore Road (opposite Bayshore MRT)",
+    "district": "D16",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 515,
+    "launchDate": "2026-04",
+    "expectedTop": null,
+    "priceFromSgd": null,
+    "avgPsfSgd": 2886,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "Penthouse"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/vela-bay-sells-72-launch-day-average-2886-psf",
+      "https://www.edgeprop.sg/new-launches"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "pinery-residences",
+    "name": "Pinery Residences",
+    "developer": "Hoi Hup Realty and Sunway MCL (JV)",
+    "address": "Tampines Street 94 (Tampines West)",
+    "district": "D16",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 588,
+    "launchDate": "2026-03",
+    "expectedTop": null,
+    "priceFromSgd": 1486000,
+    "avgPsfSgd": 2546,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://sunwayproperty.com/news-events/hoi-hup-sunway-mcl-preview-pinery-residences-mixed-use-project-tampines-west-2340-psf/",
+      "https://www.edgeprop.sg/property-news/pinery-residences-925-sold-2546-psf-launch-weekend-continuing-tampines-sales-momentum"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "rivelle-tampines",
+    "name": "Rivelle Tampines",
+    "developer": "Sim Lian Group",
+    "address": "Tampines Street 95",
+    "district": "D18",
+    "segment": "OCR",
+    "type": "EC",
+    "tenure": "99-year leasehold",
+    "totalUnits": 572,
+    "launchDate": "2026-03",
+    "expectedTop": "2030",
+    "priceFromSgd": 1588000,
+    "avgPsfSgd": 1893,
+    "unitMix": [
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/rivelle-tampines-925-sold-average-1893-psf-over-launch-weekend",
+      "https://www.edgeprop.sg/property-news/rivelle-tampines-fully-sold-within-month-making-it-2026s-best-selling-ec"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "river-modern",
+    "name": "River Modern",
+    "developer": "GuocoLand",
+    "address": "River Valley Green",
+    "district": "D9",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 455,
+    "launchDate": "2026-03",
+    "expectedTop": null,
+    "priceFromSgd": 1548000,
+    "avgPsfSgd": 3266,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/guocoland-sells-over-90-river-modern-launch-day-3266-psf",
+      "https://stackedhomes.com/river-modern-sales-launch"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "newport-residences",
+    "name": "Newport Residences",
+    "developer": "City Developments Limited (CDL)",
+    "address": "Anson Road (Newport Plaza)",
+    "district": "D2",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "Freehold",
+    "totalUnits": 246,
+    "launchDate": "2026-01",
+    "expectedTop": null,
+    "priceFromSgd": 1298000,
+    "avgPsfSgd": 3370,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR",
+      "Penthouse"
+    ],
+    "sources": [
+      "https://www.cdl.com.sg/newsroom/strong-debut-for-newport-residences-first-city-centre-launch-of-2026-sells-57-of-units-on-launch-weekend",
+      "https://www.edgeprop.sg/property-news/cdl-unveils-newport-residences-rare-freehold-cbd-launch-3012-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "narra-residences",
+    "name": "Narra Residences",
+    "developer": "Dairy Farm Walk JV Development Pte Ltd (consortium led by Apex Asia Development and Santarli Realty)",
+    "address": "Dairy Farm Walk",
+    "district": "D23",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 540,
+    "launchDate": "2026-01",
+    "expectedTop": null,
+    "priceFromSgd": 998000,
+    "avgPsfSgd": 2180,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/narra-residences-sells-nearly-25-units-2180-psf-launch-weekend",
+      "https://stackedhomes.com/narra-residences-sales-launch/"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "coastal-cabana",
+    "name": "Coastal Cabana",
+    "developer": "Qingjian Realty, Forsea Holdings, ZACD Group and Jianan Capital (consortium)",
+    "address": "Jalan Loyang Besar, Pasir Ris",
+    "district": "D18",
+    "segment": "OCR",
+    "type": "EC",
+    "tenure": "99-year leasehold",
+    "totalUnits": 748,
+    "launchDate": "2026-01",
+    "expectedTop": "2029-03",
+    "priceFromSgd": 1438000,
+    "avgPsfSgd": 1734,
+    "unitMix": [
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/qingjian-realtyforsea-holdings-preview-coastal-cabana-prices-1639-psf",
+      "https://stackedhomes.com/66-of-units-at-coastal-cabana-sold-at-end-of-first-sales-day-prices-average-1820-psf/",
+      "https://www.99.co/singapore/insider/price-analysis-coastal-cabana-ec-district-18/"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "the-sen",
+    "name": "The Sen",
+    "developer": "Sustained Land JV with Ho Lee Group and Greatview Development",
+    "address": "De Souza Avenue (off Jalan Jurong Kechil)",
+    "district": "D21",
+    "segment": null,
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 347,
+    "launchDate": "2025-11",
+    "expectedTop": null,
+    "priceFromSgd": null,
+    "avgPsfSgd": 2358,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/sen-moves-80-units-or-23-launch-weekend-prices-averaging-2358-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "skye-at-holland",
+    "name": "Skye at Holland",
+    "developer": "Holly Development Pte Ltd (UOL, Singapore Land Group, Kheng Leong, CapitaLand Development)",
+    "address": "2 & 6 Holland Village Way",
+    "district": "D10",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 666,
+    "launchDate": "2025-10",
+    "expectedTop": null,
+    "priceFromSgd": null,
+    "avgPsfSgd": 2953,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/international/2025/october/cld-skye-at-holland-sales.html",
+      "https://www.edgeprop.sg/property-news/uol-sells-99-skye-holland-average-2953-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "springleaf-residence",
+    "name": "Springleaf Residence",
+    "developer": "GuocoLand and Hong Leong Holdings",
+    "address": "Upper Thomson Road (next to Springleaf MRT)",
+    "district": "D26",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 941,
+    "launchDate": "2025-08",
+    "expectedTop": null,
+    "priceFromSgd": 860000,
+    "avgPsfSgd": 2175,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/guocoland-sells-92-units-springleaf-residence-average-price-2175-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "otto-place",
+    "name": "Otto Place",
+    "developer": "Hoi Hup Realty and Sunway Developments",
+    "address": "Plantation Close, Tengah",
+    "district": "D24",
+    "segment": "OCR",
+    "type": "EC",
+    "tenure": "99-year leasehold",
+    "totalUnits": 600,
+    "launchDate": "2025-07",
+    "expectedTop": null,
+    "priceFromSgd": 1410000,
+    "avgPsfSgd": 1700,
+    "unitMix": [
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/brisk-sales-otto-place-ec-hoi-hup-sunway-selling-585-units-average-1700-psf",
+      "https://www.edgeprop.sg/property-news/otto-place-91-sold-after-second-timer-balloting-underscoring-ec-market-strength"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "one-marina-gardens",
+    "name": "One Marina Gardens",
+    "developer": "Kingsford Group",
+    "address": "Marina Gardens Lane, Marina South",
+    "district": "D1",
+    "segment": "RCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 937,
+    "launchDate": "2025-04",
+    "expectedTop": "2028",
+    "priceFromSgd": 1163000,
+    "avgPsfSgd": 2953,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/kingsfords-one-marina-gardens-sells-371-launch-average-price-2953-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "lentor-central-residences",
+    "name": "Lentor Central Residences",
+    "developer": "Hong Leong Holdings, GuocoLand and CSC Land Group",
+    "address": "Lentor Central",
+    "district": "D26",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 477,
+    "launchDate": "2025-03",
+    "expectedTop": "2028",
+    "priceFromSgd": 975000,
+    "avgPsfSgd": 2200,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/hong-leong-led-consortiums-lentor-central-residences-achieves-93-sales-average-price-2200-psf-launch",
+      "https://www.homeanddecor.com.sg/property/condominium/lentor-central-residences-review"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "aurelle-of-tampines",
+    "name": "Aurelle of Tampines",
+    "developer": "Sim Lian Group",
+    "address": "Tampines Street 62",
+    "district": "D18",
+    "segment": "OCR",
+    "type": "EC",
+    "tenure": "99-year leasehold",
+    "totalUnits": 760,
+    "launchDate": "2025-03",
+    "expectedTop": null,
+    "priceFromSgd": 1417000,
+    "avgPsfSgd": 1766,
+    "unitMix": [
+      "3BR",
+      "4BR",
+      "5BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/sim-lians-aurelle-tampines-ec-90-sold-average-price-1766-psf",
+      "https://www.edgeprop.sg/property-news/aurelle-tampines-ec-fully-sold-remaining-units-cleared-within-hour-balloting"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "parktown-residence",
+    "name": "Parktown Residence",
+    "developer": "UOL-SingLand and CapitaLand Development (50:50 JV)",
+    "address": "Tampines Avenue 11, Tampines North",
+    "district": "D18",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 1193,
+    "launchDate": "2025-02",
+    "expectedTop": null,
+    "priceFromSgd": null,
+    "avgPsfSgd": 2360,
+    "unitMix": null,
+    "sources": [
+      "https://www.uol.com.sg/news/over-87-of-parktown-residence-units-sold-at-launch-weekend/",
+      "https://www.edgeprop.sg/amp/property-news/uol-capitaland-moves-1041-units-parktown-residence-launch-day-average-price-achieved-2360-psf"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "elta",
+    "name": "Elta",
+    "developer": "MCL Land and CSC Land Group (JV)",
+    "address": "Clementi Avenue 1",
+    "district": "D5",
+    "segment": "OCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 501,
+    "launchDate": "2025-02",
+    "expectedTop": null,
+    "priceFromSgd": 1158000,
+    "avgPsfSgd": 2537,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [
+      "https://www.edgeprop.sg/property-news/mcl-csc-land-jv-sells-65-elta-average-price-2537-psf",
+      "https://stackedhomes.com/why-this-new-clementi-condo-sold-326-units-at-2537-psf-4-reasons-for-eltas-demand"
+    ],
+    "fictional": false
+  },
+  {
+    "id": "aurelia-bay-residences",
+    "name": "Aurelia Bay Residences",
+    "developer": "Aurelia Bay Development Pte Ltd",
+    "address": "18 Marina Crest Road, Singapore 018947",
+    "district": "D15",
+    "segment": "RCR",
+    "type": "CONDO",
+    "tenure": "99-year leasehold",
+    "totalUnits": 420,
+    "launchDate": "2026-09",
+    "expectedTop": "2029-06",
+    "priceFromSgd": 1180000,
+    "avgPsfSgd": 2350,
+    "unitMix": [
+      "1BR",
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [],
+    "fictional": true
+  },
+  {
+    "id": "kingsmere-park",
+    "name": "Kingsmere Park",
+    "developer": "Kingsmere Land Pte Ltd",
+    "address": "7 Kingsmere Lane, Singapore 279876",
+    "district": "D10",
+    "segment": "CCR",
+    "type": "CONDO",
+    "tenure": "Freehold",
+    "totalUnits": 180,
+    "launchDate": "2022-03",
+    "expectedTop": "2025-11",
+    "priceFromSgd": null,
+    "avgPsfSgd": null,
+    "unitMix": [
+      "2BR",
+      "3BR",
+      "4BR"
+    ],
+    "sources": [],
+    "fictional": true
+  }
+]

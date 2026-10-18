@@ -8,6 +8,7 @@ import type {
   DealDocument,
   DealSummary,
   FollowUp,
+  Project,
   Risk,
   Stage,
   StageKey,
@@ -148,6 +149,42 @@ function idDoc(name: string, masked: string, uploadedAt: string): DealDocument {
   };
 }
 
+// MOCK catalog for VITE_MOCK=1 only. Figures are rough placeholders, not verified market data;
+// the real catalog comes from GET /api/projects.
+const MOCK_PROJECTS: Project[] = [
+  {
+    id: 'aurelia-bay-residences',
+    name: 'Aurelia Bay Residences',
+    developer: 'Aurelia Bay Development Pte Ltd (fictional)',
+    address: '18 Aurelia Bay Drive, Singapore 438888 (fictional)',
+    district: 'D15',
+    segment: 'RCR',
+    type: 'CONDO',
+    tenure: '99-year leasehold',
+    totalUnits: 640,
+    launchDate: '2026-03',
+    expectedTop: '2030-06',
+    priceFromSgd: 1_380_000,
+    avgPsfSgd: 2_450,
+    unitMix: ['1BR', '2BR', '3BR', '4BR', 'Penthouse'],
+    sources: [],
+    fictional: true,
+  },
+  { id: 'mock-grand-dunman', name: 'Grand Dunman', developer: 'SingHaiyi Group (mock)', address: 'Dunman Road (mock)', district: 'D15', segment: 'RCR', type: 'CONDO', tenure: '99-year leasehold', totalUnits: 1008, launchDate: '2026-01', expectedTop: '2028', priceFromSgd: 1_300_000, avgPsfSgd: 2_500, unitMix: ['1BR', '2BR', '3BR', '4BR', '5BR'], sources: ['https://example.com/mock-source'], fictional: false },
+  { id: 'mock-the-continuum', name: 'The Continuum', developer: 'Hoi Hup / Sunway (mock)', address: 'Thiam Siew Avenue (mock)', district: 'D15', segment: 'RCR', type: 'CONDO', tenure: 'Freehold', totalUnits: 816, launchDate: '2025-11', expectedTop: '2027', priceFromSgd: 1_450_000, avgPsfSgd: 2_750, unitMix: ['1BR', '2BR', '3BR', '4BR', '5BR'], sources: [], fictional: false },
+  { id: 'mock-lentor-hills-residences', name: 'Lentor Hills Residences', developer: 'Hong Leong / GuocoLand (mock)', address: 'Lentor Hills Road (mock)', district: 'D26', segment: 'OCR', type: 'CONDO', tenure: '99-year leasehold', totalUnits: 598, launchDate: '2025-08', expectedTop: '2027', priceFromSgd: 1_100_000, avgPsfSgd: 2_100, unitMix: ['1BR', '2BR', '3BR', '4BR'], sources: [], fictional: false },
+  { id: 'mock-hillock-green', name: 'Hillock Green', developer: 'Lentor Hills Pte Ltd (mock)', address: 'Lentor Central (mock)', district: 'D26', segment: 'OCR', type: 'CONDO', tenure: '99-year leasehold', totalUnits: 474, launchDate: '2025-06', expectedTop: '2027', priceFromSgd: 1_050_000, avgPsfSgd: 2_050, unitMix: ['1BR', '2BR', '3BR', '4BR'], sources: [], fictional: false },
+  { id: 'mock-tembusu-grand', name: 'Tembusu Grand', developer: 'City Developments / MCL Land (mock)', address: 'Jalan Tembusu (mock)', district: 'D15', segment: 'RCR', type: 'CONDO', tenure: '99-year leasehold', totalUnits: 638, launchDate: '2025-03', expectedTop: '2026', priceFromSgd: 1_400_000, avgPsfSgd: 2_400, unitMix: ['1BR', '2BR', '3BR', '4BR', '5BR'], sources: [], fictional: false },
+  { id: 'mock-copen-grand', name: 'Copen Grand', developer: 'CDL / MCL Land (mock)', address: 'Tengah Garden Walk (mock)', district: 'D24', segment: 'OCR', type: 'EC', tenure: '99-year leasehold', totalUnits: 639, launchDate: '2025-01', expectedTop: '2027', priceFromSgd: 1_100_000, avgPsfSgd: 1_400, unitMix: ['3BR', '4BR', '5BR'], sources: [], fictional: false },
+];
+
+const projectIdFor = (name: string) => MOCK_PROJECTS.find((p) => p.name === name)?.id ?? null;
+
+export async function listProjects(): Promise<Project[]> {
+  await sleep(200);
+  return structuredClone(MOCK_PROJECTS);
+}
+
 function makeDeal(
   id: string,
   customerId: string,
@@ -167,6 +204,7 @@ function makeDeal(
     customerId,
     agentName: 'Rachel Ong',
     project,
+    projectId: projectIdFor(project),
     unit,
     price,
     otpDate,
@@ -356,7 +394,9 @@ export async function createBooking(form: FormData): Promise<DealDetail> {
     id,
     customerId: cid,
     agentName: 'Rachel Ong',
-    project: (form.get('project') as string) || 'Untitled project',
+    project:
+      MOCK_PROJECTS.find((p) => p.id === form.get('projectId'))?.name ?? ((form.get('project') as string) || 'Untitled project'),
+    projectId: MOCK_PROJECTS.some((p) => p.id === form.get('projectId')) ? (form.get('projectId') as string) : null,
     unit: (form.get('unit') as string) || '—',
     price,
     otpDate,

@@ -8,6 +8,7 @@ import { todaySg, formatDate } from './domain/dates.js';
 import { maskId } from './domain/identity.js';
 import { buildStages, completedMap, currentStage, riskOf, summarize, STAGE_DEFS } from './domain/stages.js';
 import { calcStampDuty } from './domain/stamp-duty.js';
+import { expectedTopDate, getProject } from './projects.js';
 import { store, toPublicCustomer, type StoredCustomer } from './store.js';
 
 export class NotFound extends Error {}
@@ -38,6 +39,7 @@ export async function getDetail(id: string): Promise<DealDetail> {
 
 export interface BookingInput {
     file: { mimeType: string; data: Buffer; fileName: string };
+    projectId: string | null;
     project: string;
     unit: string;
     price: number;
@@ -72,17 +74,20 @@ export async function createBooking(input: BookingInput): Promise<DealDetail> {
         profile: { purpose: input.purpose, propertiesOwned: input.propertiesOwned, household: input.household },
     };
     const today = todaySg();
+    const catalog = getProject(input.projectId);
+    if (input.projectId && !catalog) throw new BadRequest(`Unknown project ${input.projectId}`);
     const deal: Deal = {
         id: randomUUID(),
         customerId: customer.id,
         agentName: config.agentName,
-        project: input.project,
+        projectId: catalog?.id ?? null,
+        project: catalog?.name ?? input.project,
         unit: input.unit,
         price: input.price,
         otpDate: input.otpDate,
         bookingFee: Math.round(input.price * 0.05),
         currentStage: 'CDD',
-        stages: buildStages(input.otpDate, { BOOKING: input.otpDate, CDD: today }),
+        stages: buildStages(input.otpDate, { BOOKING: input.otpDate, CDD: today }, expectedTopDate(catalog)),
         documents: [
             {
                 id: randomUUID(),
@@ -127,7 +132,7 @@ export async function completeStage(dealId: string, key: StageKey, date: string)
     if (!STAGE_DEFS.some((s) => s.key === key)) throw new BadRequest(`Unknown stage ${key}`);
     const done = completedMap(deal.stages);
     done[key] = date;
-    deal.stages = buildStages(deal.otpDate, done);
+    deal.stages = buildStages(deal.otpDate, done, expectedTopDate(getProject(deal.projectId)));
     deal.currentStage = currentStage(deal.stages)?.key ?? 'KEYS';
     await store.saveDeal(deal);
     return getDetail(dealId);
@@ -154,6 +159,7 @@ export async function dealContext(dealId: string) {
             stages: deal.stages.map((s) => ({ key: s.key, label: s.label, dueDate: s.dueDate, completedAt: s.completedAt, description: s.description })),
             documents: deal.documents.map((d) => ({ type: d.type, fileName: d.fileName, summary: d.summary, checks: d.checks })),
         },
+        project: getProject(deal.projectId),
         stampDuty: calcStampDuty(deal.price, customer.residency, customer.profile.propertiesOwned),
     };
 }

@@ -8,6 +8,7 @@ import { chat } from './agent/chat.js';
 import { todaySg } from './domain/dates.js';
 import { BadRequest, NotFound, addDocument, completeStage, createBooking, getDetail, listSummaries, suggestFollowUps } from './deals.js';
 import { logger } from './logger.js';
+import { listProjects } from './projects.js';
 
 const MAX_UPLOAD = 15 * 1024 * 1024;
 const ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
@@ -21,6 +22,7 @@ async function readFile(form: FormData) {
 }
 
 const BookingFields = z.object({
+    projectId: z.string().optional(),
     project: z.string().min(1),
     unit: z.string().min(1),
     price: z.coerce.number().positive(),
@@ -50,6 +52,8 @@ app.use('/api/*', (c, next) => (/^\/api\/(bookings|deals\/[^/]+\/documents)$/.te
 
 app.get('/api/health', (c) => c.json({ ok: true, today: todaySg() }));
 
+app.get('/api/projects', (c) => c.json(listProjects()));
+
 app.get('/api/deals', async (c) => c.json(await listSummaries()));
 
 app.get('/api/deals/:id', async (c) => c.json(await getDetail(c.req.param('id'))));
@@ -59,7 +63,7 @@ app.post('/api/bookings', async (c) => {
     const file = await readFile(form);
     const f = BookingFields.parse(Object.fromEntries([...form.entries()].filter(([k]) => k !== 'file')));
     return c.json(
-        await createBooking({ ...f, file, household: f.household || null, phone: f.phone || null, email: f.email || null }),
+        await createBooking({ ...f, file, projectId: f.projectId || null, household: f.household || null, phone: f.phone || null, email: f.email || null }),
     );
 });
 

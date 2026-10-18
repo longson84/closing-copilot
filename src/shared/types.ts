@@ -24,6 +24,27 @@ export interface Customer {
     };
 }
 
+/** A Singapore new-launch project from the catalog (src/server/data/projects.json). */
+export interface Project {
+    id: string;
+    name: string;
+    developer: string | null;
+    address: string | null;
+    district: string | null; // e.g. "D19"
+    segment: 'CCR' | 'RCR' | 'OCR' | null;
+    type: 'CONDO' | 'EC' | 'LANDED_STRATA';
+    tenure: string | null;
+    totalUnits: number | null;
+    launchDate: string | null; // YYYY-MM
+    expectedTop: string | null; // YYYY-MM or YYYY
+    priceFromSgd: number | null;
+    avgPsfSgd: number | null;
+    unitMix: string[];
+    sources: string[];
+    /** True for the made-up demo project the sample documents refer to. */
+    fictional: boolean;
+}
+
 export type StageKey =
     | 'BOOKING'
     | 'CDD'
@@ -67,6 +88,8 @@ export interface Deal {
     id: string;
     customerId: string;
     agentName: string;
+    /** Catalog id when the project came from the catalog. */
+    projectId: string | null;
     project: string;
     unit: string;
     price: number; // SGD
@@ -110,10 +133,11 @@ export interface FollowUp {
 
 /**
  * HTTP API (all JSON unless noted):
+ *   GET  /api/projects                       -> Project[] (newest launch first)
  *   GET  /api/deals                          -> DealSummary[]
  *   GET  /api/deals/:id                      -> DealDetail
  *   POST /api/bookings   (multipart)         -> DealDetail
- *        fields: file (ID image/PDF), project, unit, price, otpDate, residency,
+ *        fields: file (ID image/PDF), projectId? (catalog id; fills project name), project, unit, price, otpDate, residency,
  *                purpose, propertiesOwned, household?, phone?, email?
  *   POST /api/deals/:id/documents (multipart: file) -> { deal: DealDetail, document: DealDocument }
  *   POST /api/deals/:id/stages/:key/complete  { date: 'YYYY-MM-DD' } -> DealDetail

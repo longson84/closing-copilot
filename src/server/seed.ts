@@ -7,6 +7,7 @@ import { config } from './config.js';
 import { maskId } from './domain/identity.js';
 import { buildStages, currentStage } from './domain/stages.js';
 import { logger } from './logger.js';
+import { expectedTopDate, findProjectByName } from './projects.js';
 import { store } from './store.js';
 
 const SEED_FILE = 'demo-docs/seed.json';
@@ -33,11 +34,13 @@ export async function seedIfEmpty(): Promise<void> {
             idNumberMasked: maskId(e.customer.idNumber),
             preferredLanguage: 'English',
         });
-        const stages = buildStages(e.deal.otpDate, e.deal.completed);
+        const project = findProjectByName(e.deal.project);
+        const stages = buildStages(e.deal.otpDate, e.deal.completed, expectedTopDate(project));
         const deal: Deal = {
             id: randomUUID(),
             customerId,
             agentName: config.agentName,
+            projectId: project?.id ?? null,
             project: e.deal.project,
             unit: e.deal.unit,
             price: e.deal.price,

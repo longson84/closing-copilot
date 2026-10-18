@@ -5,6 +5,7 @@ import { Icon } from './components/ui';
 import { DealPage } from './pages/DealPage';
 import { NewBooking } from './pages/NewBooking';
 import { Pipeline } from './pages/Pipeline';
+import { Projects } from './pages/Projects';
 import { DESKTOP, PHONE, useInstall, useMedia, useOnline } from './pwa';
 import { useRoute } from './router';
 
@@ -49,11 +50,14 @@ export function App() {
           <span className="brand-name">Closing Copilot</span>
         </a>
         <nav className="nav">
-          <a className={route.name !== 'new' ? 'active' : ''} href="#/" title="Pipeline">
+          <a className={route.name === 'pipeline' || route.name === 'deal' ? 'active' : ''} href="#/" title="Pipeline">
             <Icon name="pipeline" /> <span className="nav-text">Pipeline</span>
           </a>
           <a className={route.name === 'new' ? 'active' : ''} href="#/new" title="New booking">
             <Icon name="plus" /> <span className="nav-text">New booking</span>
+          </a>
+          <a className={route.name === 'projects' ? 'active' : ''} href="#/projects" title="Projects">
+            <Icon name="building" /> <span className="nav-text">Projects</span>
           </a>
         </nav>
         {installButton && <div className="sidebar-install">{installButton}</div>}
@@ -87,6 +91,7 @@ export function App() {
         )}
         {route.name === 'pipeline' && <Pipeline />}
         {route.name === 'new' && <NewBooking />}
+        {route.name === 'projects' && <Projects />}
         {route.name === 'deal' && <DealPage key={route.id} id={route.id} review={route.review} />}
       </main>
 
@@ -113,13 +118,17 @@ export function App() {
       )}
 
       <nav className="tabbar" aria-label="Main">
-        <a className={route.name !== 'new' && !copilotOpen ? 'active' : ''} href="#/" onClick={() => setCopilotOpen(false)}>
+        <a className={(route.name === 'pipeline' || route.name === 'deal') && !copilotOpen ? 'active' : ''} href="#/" onClick={() => setCopilotOpen(false)}>
           <Icon name="pipeline" size={20} />
           <span>Pipeline</span>
         </a>
         <a className={route.name === 'new' && !copilotOpen ? 'active' : ''} href="#/new" onClick={() => setCopilotOpen(false)}>
           <Icon name="plus" size={20} />
           <span>New booking</span>
+        </a>
+        <a className={route.name === 'projects' && !copilotOpen ? 'active' : ''} href="#/projects" onClick={() => setCopilotOpen(false)}>
+          <Icon name="building" size={20} />
+          <span>Projects</span>
         </a>
         <button className={copilotOpen ? 'active' : ''} onClick={() => setCopilotOpen((o) => !o)}>
           <Icon name="spark" size={20} />

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { DealDetail, DealDocument, Stage } from '../../../src/shared/types';
-import { completeStage, getDeal, uploadDocument } from '../api';
+import type { DealDetail, DealDocument, Project, Stage } from '../../../src/shared/types';
+import { completeStage, getDeal, listProjects, uploadDocument } from '../api';
 import { DocumentCard } from '../components/DocumentCard';
 import { Followups } from '../components/Followups';
 import { StageRail } from '../components/StageRail';
 import { AiProgress, ConfirmDialog, Dropzone, ErrorNote, Icon, RiskBadge, Spinner } from '../components/ui';
-import { formatDate, formatSGD, purposeLabel, residencyLabel, todayISO } from '../format';
+import { formatDate, formatMonth, formatSGD, purposeLabel, residencyLabel, todayISO } from '../format';
 
 export function DealPage({ id, review }: { id: string; review: boolean }) {
   const [data, setData] = useState<DealDetail | null>(null);
@@ -19,6 +19,12 @@ export function DealPage({ id, review }: { id: string; review: boolean }) {
   const [fresh, setFresh] = useState<DealDocument | null>(null);
   const [showReview, setShowReview] = useState(review);
   const [followKey, setFollowKey] = useState(0);
+  const [catalog, setCatalog] = useState<Project[]>([]);
+  useEffect(() => {
+    listProjects()
+      .then(setCatalog)
+      .catch(() => undefined); // header extras are optional
+  }, []);
 
   const load = useCallback(() => {
     setError(null);
@@ -83,6 +89,15 @@ export function DealPage({ id, review }: { id: string; review: boolean }) {
   const docs = [...deal.documents].sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
   const mismatches = deal.documents.flatMap((d) => d.checks.filter((c) => c.status === 'MISMATCH').map((c) => ({ d, c })));
   const idDoc = deal.documents.find((d) => d.type === 'IDENTITY');
+  const proj = deal.projectId ? catalog.find((p) => p.id === deal.projectId) : undefined;
+  const projFacts = proj
+    ? [
+        proj.developer,
+        [proj.district, proj.segment].filter(Boolean).join(' '),
+        proj.tenure,
+        proj.expectedTop ? `Expected TOP ${formatMonth(proj.expectedTop)}` : null,
+      ].filter(Boolean)
+    : [];
 
   return (
     <div className="page">
@@ -102,6 +117,15 @@ export function DealPage({ id, review }: { id: string; review: boolean }) {
             <span className="sep" />
             <span>Booking fee {formatSGD(deal.bookingFee)}</span>
           </p>
+          {projFacts.length > 0 && (
+            <p className="deal-proj">
+              <Icon name="building" size={14} />
+              {projFacts.map((f, k) => (
+                <span key={k}>{f}</span>
+              ))}
+              {proj?.fictional && <span className="tag tag-demo">Demo project (fictional)</span>}
+            </p>
+          )}
         </div>
         <RiskBadge risk={risk} />
       </header>

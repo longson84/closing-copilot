@@ -24,7 +24,9 @@ type IconName =
   | 'camera'
   | 'download'
   | 'share'
-  | 'offline';
+  | 'offline'
+  | 'search'
+  | 'building';
 
 const paths: Record<IconName, ReactNode> = {
   pipeline: <path d="M4 6h16M4 12h10M4 18h6" />,
@@ -46,6 +48,8 @@ const paths: Record<IconName, ReactNode> = {
   back: <path d="M15 6l-6 6 6 6" />,
   user: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0" />,
   camera: <path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1zM12 17a4 4 0 100-8 4 4 0 000 8z" />,
+  search: <path d="M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4" />,
+  building: <path d="M4 21V5a1 1 0 011-1h9a1 1 0 011 1v16M15 10h4a1 1 0 011 1v10M3 21h18M8 8h3M8 12h3M8 16h3" />,
   download: <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />,
   share: <path d="M12 15V3M8 7l4-4 4 4M6 11H5a1 1 0 00-1 1v8a1 1 0 001 1h14a1 1 0 001-1v-8a1 1 0 00-1-1h-1" />,
   offline: <path d="M2 8.5a15 15 0 0120 0M5.5 12a10 10 0 0113 0M9 15.5a5 5 0 016 0M12 19.5v.01M3 3l18 18" />,

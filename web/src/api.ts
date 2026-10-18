@@ -4,6 +4,7 @@ import type {
   DealDocument,
   DealSummary,
   FollowUp,
+  Project,
   StageKey,
 } from '../../src/shared/types';
 
@@ -26,6 +27,21 @@ async function json<T>(res: Response): Promise<T> {
     throw new Error(msg);
   }
   return res.json() as Promise<T>;
+}
+
+let projectsCache: Promise<Project[]> | null = null;
+
+/** GET /api/projects, fetched once per page load and shared by every screen. */
+export function listProjects(): Promise<Project[]> {
+  if (!projectsCache) {
+    projectsCache = (MOCK ? mock().then((m) => m.listProjects()) : fetch('/api/projects').then((r) => json<Project[]>(r))).catch(
+      (e) => {
+        projectsCache = null;
+        throw e;
+      },
+    );
+  }
+  return projectsCache;
 }
 
 export async function listDeals(): Promise<DealSummary[]> {

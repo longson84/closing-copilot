@@ -2,14 +2,18 @@
   {
     "id": "today-priorities",
     "prompt": "What do I need to do today?",
-    "expectTools": ["list_deals_needing_action"],
+    "expectTools": [
+      "list_deals_needing_action"
+    ],
     "rubric": "- Lists the overdue deal(s) first, by buyer name, with the specific action and its deadline date.\n- Mentions deals due within the week.\n- Does not invent deals, dates or amounts that a tool did not return.\n- Concise, action-oriented bullet list."
   },
   {
     "id": "stamp-duty-this-buyer",
     "prompt": "How much stamp duty will this buyer pay and by when?",
     "dealOf": "PRIYA",
-    "expectTools": ["get_deal"],
+    "expectTools": [
+      "get_deal"
+    ],
     "rubric": "- States BSD, ABSD and the total as dollar amounts.\n- Explains the ABSD rate in terms of the buyer's residency and how many properties they own.\n- States payment is due within 14 days of signing the S&P.\n- Does not show a full NRIC number."
   },
   {
@@ -17,7 +21,9 @@
     "prompt": "Is this deal on track?",
     "dealOf": "LEE JUN",
     "withMismatch": true,
-    "expectTools": ["get_deal"],
+    "expectTools": [
+      "get_deal"
+    ],
     "rubric": "- Raises the purchaser-name mismatch on the S&P prominently (first or near the top).\n- Says the buyer should not sign until the developer's solicitor corrects it.\n- Mentions the next legal deadline with a date."
   },
   {
@@ -30,14 +36,27 @@
   {
     "id": "after-sales",
     "prompt": "Which of my buyers already got their keys, and what should I do for them?",
-    "expectTools": ["list_deals_needing_action", "suggest_followups"],
+    "expectTools": [
+      "list_deals_needing_action",
+      "suggest_followups"
+    ],
     "rubric": "- Identifies the completed (keys handed over) deal by buyer name.\n- Suggests after-sales actions grounded in dates, such as a defects inspection before the 12-month defects liability period ends, loan lock-in review, or a referral ask.\n- Includes or offers a draft message."
   },
   {
     "id": "draft-reminder",
     "prompt": "Draft a WhatsApp reminder to this buyer about their next deadline.",
     "dealOf": "PRIYA",
-    "expectTools": ["get_deal"],
+    "expectTools": [
+      "get_deal"
+    ],
     "rubric": "- Contains a short, polite WhatsApp-style message addressed to the buyer by name.\n- States the specific next action and its exact date from the deal.\n- No full NRIC, no invented amounts."
+  },
+  {
+    "id": "project-catalog",
+    "prompt": "I have a buyer who wants an EC that launched this year. What are the options and when do they TOP?",
+    "expectTools": [
+      "search_projects"
+    ],
+    "rubric": "- Lists only Executive Condominiums from the catalog that launched in 2026, by name.\n- Gives each one's expected TOP if the catalog has it, and says plainly when it is not known instead of guessing.\n- Does not invent prices or dates that are not in the tool result."
   }
 ]

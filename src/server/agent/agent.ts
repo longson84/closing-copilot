@@ -7,6 +7,7 @@ import { config } from '../config.js';
 import { formatDate, todaySg } from '../domain/dates.js';
 import { dealContext, listSummaries, suggestFollowUps } from '../deals.js';
 import { calcStampDuty } from '../domain/stamp-duty.js';
+import { listProjects } from '../projects.js';
 
 const listDealsNeedingAction = new FunctionTool({
     name: 'list_deals_needing_action',
@@ -64,6 +65,32 @@ const followUps = new FunctionTool({
     execute: async ({ dealId }) => ({ followUps: await suggestFollowUps(dealId) }),
 });
 
+const searchProjects = new FunctionTool({
+    name: 'search_projects',
+    description:
+        'Searches the catalog of Singapore new-launch projects (2025–2026): developer, district, market segment, ' +
+        'tenure, units, launch date, expected TOP, launch prices and sources. All filters optional.',
+    parameters: z.object({
+        query: z.string().optional().describe('Text in the name, developer or address'),
+        segment: z.enum(['CCR', 'RCR', 'OCR']).optional(),
+        type: z.enum(['CONDO', 'EC', 'LANDED_STRATA']).optional(),
+        district: z.string().optional().describe('Postal district like "D19"'),
+        launchedFrom: z.string().optional().describe('Earliest launch month, YYYY-MM'),
+    }),
+    execute: async ({ query, segment, type, district, launchedFrom }) => {
+        const q = query?.toLowerCase();
+        const projects = listProjects().filter(
+            (p) =>
+                (!q || `${p.name} ${p.developer ?? ''} ${p.address ?? ''}`.toLowerCase().includes(q)) &&
+                (!segment || p.segment === segment) &&
+                (!type || p.type === type) &&
+                (!district || p.district?.toUpperCase() === district.toUpperCase()) &&
+                (!launchedFrom || (p.launchDate ?? '') >= launchedFrom),
+        );
+        return { count: projects.length, projects: projects.slice(0, 15) };
+    },
+});
+
 export const rootAgent = new LlmAgent({
     name: 'closing_copilot',
     model: config.model,
@@ -86,8 +113,9 @@ Rules:
 - Never reveal or ask for a full NRIC/FIN/passport number; use the masked form. Refuse requests to show a full ID number.
 - You cannot change stages yourself: tell the agent to use "Mark complete" on the deal page after checking the evidence.
 - Answer like a sharp colleague: short, concrete, with dates as "12 Nov 2026" and amounts as "$92,500". Use bullet points for action lists. Drafted messages to buyers are polite, brief and WhatsApp-ready.
+- Project facts (developer, TOP, tenure, prices) come from search_projects or get_deal; mention a project is fictional if the catalog says so.
 - English only.`;
     },
-    tools: [listDealsNeedingAction, findDeals, getDeal, stampDuty, followUps],
+    tools: [listDealsNeedingAction, findDeals, getDeal, stampDuty, followUps, searchProjects],
     generateContentConfig: { temperature: 0.3 },
 });
