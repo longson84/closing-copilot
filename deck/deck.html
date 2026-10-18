@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Closing Copilot deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=block" rel="stylesheet">
+<style>
+:root {
+  --canvas: #eef1ef;
+  --canvas-2: #e4e9e6;
+  --surface: #ffffff;
+  --ink: #15212b;
+  --ink-2: #44525f;
+  --muted: #6f7b86;
+  --line: #d6ddda;
+  --jade: #0e6e66;
+  --jade-ink: #0a524c;
+  --jade-soft: #dcece8;
+  --red: #b42318;
+  --red-soft: #fdf0ee;
+  --sans: 'Instrument Sans', system-ui, sans-serif;
+  --serif: 'Newsreader', Georgia, serif;
+}
+@page { size: 1920px 1080px; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--canvas); color: var(--ink); font-family: var(--sans); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.slide {
+  width: 1920px; height: 1080px; position: relative; overflow: hidden;
+  background: var(--canvas);
+  padding: 104px 120px 96px;
+  page-break-after: always; break-after: page;
+}
+.slide:last-child { page-break-after: auto; break-after: auto; }
+
+/* type */
+h1, h2, .serif { font-family: var(--serif); font-weight: 500; letter-spacing: -0.015em; }
+h2 { font-size: 76px; line-height: 1.04; max-width: 1500px; }
+.kicker { font-size: 28px; font-weight: 600; color: var(--jade); margin-bottom: 22px; }
+p, li { font-size: 30px; line-height: 1.42; color: var(--ink-2); }
+strong { color: var(--ink); font-weight: 600; }
+ul.points { list-style: none; display: grid; gap: 26px; }
+ul.points li { padding-left: 34px; position: relative; }
+ul.points li::before { content: ""; position: absolute; left: 0; top: 17px; width: 12px; height: 12px; border-radius: 3px; background: var(--jade); }
+
+.foot { position: absolute; left: 120px; bottom: 44px; font-size: 20px; color: var(--muted); display: flex; gap: 18px; align-items: center; }
+.foot .mark { width: 22px; height: 22px; border-radius: 6px; background: var(--jade); display: inline-grid; place-items: center; }
+.foot .mark svg { width: 13px; height: 13px; }
+.foot .num { font-variant-numeric: tabular-nums; }
+
+/* screenshot slides */
+.split { display: grid; grid-template-columns: 700px 1fr; gap: 80px; height: 100%; }
+.split .text { display: flex; flex-direction: column; }
+.split h2 { font-size: 64px; margin-bottom: 44px; }
+.split ul.points { gap: 24px; }
+.split li { font-size: 28px; line-height: 1.4; }
+.shot {
+  position: absolute; right: 96px; top: 96px; width: 900px;
+  background: var(--surface); border-radius: 18px 18px 0 0; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(21,33,43,.07), 0 40px 80px -30px rgba(21,33,43,.35);
+  bottom: 0;
+}
+.shot img { width: 100%; display: block; }
+.shot .bar { height: 40px; background: #f7f8f8; border-bottom: 1px solid #e6eae8; display: flex; align-items: center; gap: 9px; padding-left: 18px; }
+.shot .bar i { width: 12px; height: 12px; border-radius: 50%; background: #d4dad7; }
+.shot .bar span { margin-left: 18px; font-size: 16px; color: var(--muted); }
+.caption { font-size: 22px; color: var(--muted); margin-top: auto; padding-bottom: 40px; line-height: 1.4; }
+
+/* 1 title */
+.s-title { padding: 0; display: grid; grid-template-columns: 1fr 640px; }
+.s-title .left { padding: 120px 0 96px 120px; display: flex; flex-direction: column; }
+.s-title .logo { display: flex; align-items: center; gap: 18px; font-family: var(--serif); font-size: 34px; font-weight: 500; }
+.s-title .logo .mark { width: 52px; height: 52px; border-radius: 14px; background: var(--jade); display: grid; place-items: center; }
+.s-title h1 { font-size: 150px; line-height: .95; margin-top: 128px; letter-spacing: -0.03em; }
+.s-title .tag { font-family: var(--serif); font-size: 46px; line-height: 1.22; color: var(--ink-2); margin-top: 36px; max-width: 980px; font-weight: 400; }
+.s-title .meta { margin-top: auto; display: grid; gap: 14px; font-size: 28px; color: var(--ink-2); }
+.s-title .meta b { color: var(--jade); font-weight: 600; }
+.s-title .right { background: var(--canvas-2); position: relative; overflow: hidden; }
+.phone {
+  position: absolute; left: 110px; top: 110px; width: 420px;
+  border-radius: 54px; background: #15212b; padding: 14px;
+  box-shadow: 0 50px 100px -30px rgba(21,33,43,.45);
+}
+.phone img { width: 100%; display: block; border-radius: 42px; }
+
+/* 2 problem */
+.rail { position: relative; margin: 64px 0 0; height: 300px; }
+.rail .line { position: absolute; left: 0; right: 0; top: 64px; height: 4px; background: var(--line); border-radius: 2px; }
+.rail .line.fill { right: auto; width: 100%; background: linear-gradient(90deg, var(--jade), var(--jade)); opacity: .9; }
+.stop { position: absolute; top: 0; width: 330px; }
+.stop .when { font-size: 26px; font-weight: 600; color: var(--jade); height: 40px; }
+.stop .dot { width: 26px; height: 26px; border-radius: 50%; background: var(--surface); border: 4px solid var(--jade); margin: 11px 0 26px; }
+.stop.start .dot { background: var(--jade); }
+.stop.risk .dot { border-color: var(--red); }
+.stop.risk .when { color: var(--red); }
+.stop .what { font-size: 28px; line-height: 1.32; color: var(--ink); font-weight: 500; }
+.stop .sub { font-size: 24px; line-height: 1.35; color: var(--muted); margin-top: 8px; }
+.problem-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 96px; margin-top: 40px; align-items: start; }
+.quote { font-family: var(--serif); font-size: 40px; line-height: 1.25; color: var(--ink); border-left: 5px solid var(--jade); padding-left: 36px; }
+
+/* 3 who */
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 110px; margin-top: 72px; }
+.who h3 { font-size: 28px; font-weight: 600; color: var(--jade); margin-bottom: 16px; }
+.who .block + .block { margin-top: 48px; }
+.need { background: var(--surface); border-radius: 24px; padding: 56px 60px; font-family: var(--serif); font-size: 48px; line-height: 1.22; box-shadow: 0 0 0 1px rgba(21,33,43,.05); }
+.need .lab { font-family: var(--sans); font-size: 26px; color: var(--muted); display: block; margin-bottom: 22px; }
+.need p { font-family: var(--sans); font-size: 30px; margin-top: 32px; }
+
+/* 4 jobs */
+.jobs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 56px; margin-top: 80px; }
+.job { border-top: 4px solid var(--jade); padding-top: 30px; }
+.job .verb { font-family: var(--serif); font-size: 62px; line-height: 1; font-weight: 500; margin-bottom: 24px; }
+.job p { font-size: 28px; line-height: 1.4; }
+.ask { margin-top: 76px; display: flex; align-items: center; gap: 36px; background: var(--surface); border-radius: 22px; padding: 34px 44px; box-shadow: 0 0 0 1px rgba(21,33,43,.05); }
+.ask .spark { width: 64px; height: 64px; border-radius: 16px; background: var(--ink); display: grid; place-items: center; flex: none; }
+.ask p { font-size: 30px; }
+.ask .q { font-family: var(--serif); font-size: 40px; color: var(--ink); }
+
+/* 7 match & care collage */
+.collage { position: absolute; right: 80px; top: 96px; bottom: 0; width: 960px; }
+.collage .card { position: absolute; background: var(--surface); border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px rgba(21,33,43,.07), 0 30px 60px -28px rgba(21,33,43,.35); }
+.collage .card img { display: block; width: 100%; }
+.collage .lbl { position: absolute; font-size: 20px; color: var(--muted); }
+
+/* 8 reminders */
+.kinds { list-style: none; display: grid; gap: 18px; }
+.kinds li { font-size: 28px; color: var(--ink); display: flex; align-items: center; gap: 18px; }
+.kinds li i { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.wish { margin-top: 44px; font-size: 28px; line-height: 1.4; color: var(--ink-2); background: var(--surface); padding: 28px 32px; border-radius: 18px; box-shadow: 0 0 0 1px rgba(21,33,43,.05); }
+.wish b { color: var(--jade); font-weight: 600; }
+
+/* 9 agent */
+.agent-grid { display: grid; grid-template-columns: 820px 1fr; gap: 90px; margin-top: 64px; }
+.agent-grid ul.points { align-content: start; gap: 36px; }
+.agent-grid ul.points li { font-size: 30px; }
+.toolmap { background: var(--surface); border-radius: 24px; padding: 48px; box-shadow: 0 0 0 1px rgba(21,33,43,.05); }
+.toolmap .core { background: var(--jade); color: #fff; border-radius: 16px; padding: 26px 30px; }
+.toolmap .core .t { font-family: var(--serif); font-size: 40px; }
+.toolmap .core .s { font-size: 24px; opacity: .85; margin-top: 4px; }
+.toolmap .tools-lab { font-size: 24px; color: var(--muted); margin: 34px 0 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 14px; }
+.chip { font-size: 25px; padding: 10px 20px; border-radius: 999px; background: var(--jade-soft); color: var(--jade-ink); font-weight: 500; }
+.toolmap .rule { margin-top: 34px; padding-top: 28px; border-top: 1px solid var(--line); font-size: 25px; color: var(--ink-2); line-height: 1.45; }
+
+/* 10 arch */
+.arch { margin-top: 36px; }
+.arch-note { font-size: 26px; color: var(--muted); margin-top: 18px; }
+
+/* 11 responsible */
+.resp { display: grid; grid-template-columns: 1fr 620px; gap: 100px; margin-top: 64px; }
+.resp dl { display: grid; grid-template-columns: 210px 1fr; row-gap: 34px; column-gap: 36px; }
+.resp dt { font-family: var(--serif); font-size: 36px; color: var(--jade); line-height: 1.2; }
+.resp dd { font-size: 28px; line-height: 1.42; color: var(--ink-2); }
+.eval { background: var(--surface); border-radius: 24px; padding: 48px 52px; box-shadow: 0 0 0 1px rgba(21,33,43,.05); }
+.eval .score { font-family: var(--serif); font-size: 120px; line-height: 1; color: var(--jade); }
+.eval .score span { font-size: 40px; color: var(--ink-2); margin-left: 14px; font-family: var(--sans); }
+.eval p { font-size: 26px; margin-top: 18px; }
+.eval ul { list-style: none; margin-top: 26px; display: grid; gap: 10px; }
+.eval li { font-size: 25px; color: var(--ink); display: flex; gap: 14px; align-items: center; }
+.eval li svg { flex: none; }
+
+/* 12 impact */
+.impact { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; margin-top: 60px; }
+.impact h3 { font-size: 28px; font-weight: 600; color: var(--jade); margin-bottom: 22px; }
+.impact .lead { font-family: var(--serif); font-size: 42px; line-height: 1.26; color: var(--ink); }
+.next { list-style: none; display: grid; gap: 16px; }
+.next li { font-size: 28px; color: var(--ink); padding: 16px 0; border-bottom: 1px solid var(--line); }
+.links { position: absolute; left: 120px; right: 120px; bottom: 100px; display: grid; grid-template-columns: auto auto; justify-content: start; gap: 12px 40px; font-size: 26px; color: var(--ink-2); }
+.links b { color: var(--ink); font-weight: 600; }
+.links a { color: var(--jade); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- 1 Title -->
+<section class="slide s-title">
+  <div class="left">
+    <div class="logo"><span class="mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>AI Builder Cup 2026</div>
+    <h1>Closing Copilot</h1>
+    <p class="tag">The AI copilot that helps property agents close on time — and keep every client for life.</p>
+    <div class="meta">
+      <div>Problem statement: <b>Future of Work &amp; Enterprise Productivity</b></div>
+      <div>Team: theana</div>
+      <div>Built on Google Cloud: Gemini, Agent Development Kit, Document AI, Cloud Run</div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="phone"><img src="img/phone-pipeline.png" alt="Pipeline on a phone"></div>
+  </div>
+</section>
+
+<!-- 2 Problem -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>A new-launch purchase is a chain of legal deadlines that all run from one date.</h2>
+  <div class="rail">
+    <div class="line"></div>
+    <div class="stop start" style="left:0"><div class="when">Day 0</div><div class="dot"></div><div class="what">Option to Purchase</div><div class="sub">The date everything counts from</div></div>
+    <div class="stop" style="left:340px"><div class="when">Within 14 days</div><div class="dot"></div><div class="what">S&amp;P delivered</div><div class="sub">within 14 days of the OTP</div></div>
+    <div class="stop risk" style="left:680px"><div class="when">Within 3 weeks</div><div class="dot"></div><div class="what">Buyer signs the S&amp;P</div><div class="sub">or the option lapses and 25% of the booking fee is forfeited</div></div>
+    <div class="stop" style="left:1020px"><div class="when">Within 14 days</div><div class="dot"></div><div class="what">Buyer's &amp; Additional Buyer's Stamp Duty</div><div class="sub">within 14 days of signing</div></div>
+    <div class="stop" style="left:1360px"><div class="when">Within 8 weeks</div><div class="dot"></div><div class="what">15% downpayment</div><div class="sub">within 8 weeks</div></div>
+  </div>
+  <div class="problem-bottom">
+    <p>A lapsed option costs <strong>$17,750</strong> on a $1.42M unit. Every document must match the verified buyer exactly. Client conversations live in WhatsApp, and after handover the relationship is forgotten.</p>
+    <div class="quote">Knowledge is scattered, deadlines are manual, and the most valuable asset — the client relationship — isn't captured anywhere.</div>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">2</span></div>
+</section>
+
+<!-- 3 Who -->
+<section class="slide">
+  <div class="kicker">Who we help</div>
+  <h2>CEA-registered property agents selling new launches — individuals and agencies.</h2>
+  <div class="who">
+    <div>
+      <div class="block">
+        <h3>Their day</h3>
+        <p>Showflat viewings, WhatsApp threads, document chasing, and after-sales favours: tenants, furnishing, tax questions.</p>
+      </div>
+    </div>
+    <div class="need">
+      <span class="lab">What they need</span>
+      One place that knows every deal, every client and every date.
+      <p>— and does the paperwork reading for them.</p>
+    </div>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">3</span></div>
+</section>
+
+<!-- 4 Solution -->
+<section class="slide">
+  <div class="kicker">The solution</div>
+  <h2>Four jobs, one copilot.</h2>
+  <div class="jobs">
+    <div class="job"><div class="verb">Close</div><p>Reads IDs, OTPs, S&amp;Ps and receipts; cross-checks them; tracks every legal deadline.</p></div>
+    <div class="job"><div class="verb">Capture</div><p>Turns WhatsApp and profile screenshots into a CRM record with dated follow-ups.</p></div>
+    <div class="job"><div class="verb">Match</div><p>Recommends projects from a catalog of 24 real 2025–26 launches.</p></div>
+    <div class="job"><div class="verb">Care</div><p>After-sales: family &amp; important dates (with consent), tenancy, furnishing, tax reminders.</p></div>
+  </div>
+  <div class="ask">
+    <div class="spark"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg></div>
+    <div><p>Plus a <strong>Copilot agent</strong> you can ask anything:</p><div class="q">“What do I need to do today?”</div></div>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">4</span></div>
+</section>
+
+<!-- 5 Close -->
+<section class="slide">
+  <div class="split">
+    <div class="text">
+      <div class="kicker">Close</div>
+      <h2>Documents that check themselves.</h2>
+      <ul class="points">
+        <li>NRIC photo → Document AI OCR → Gemini extraction → customer + due-diligence record <strong>(13 s in our test, tilted phone photo)</strong></li>
+        <li>S&amp;P uploaded → caught <strong>“TAN WEI MIN” vs “TAN WEI MING”</strong> and two swapped NRIC digits before signing</li>
+        <li>Gemini reads; <strong>deterministic code compares</strong> — every flag is explainable</li>
+        <li>NRIC masked outside the customer record; ID image not stored (PDPA data minimisation)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="shot"><div class="bar"><i></i><i></i><i></i><span>Deal page</span></div><img src="img/deal-tan-crop.png" alt="Deal page with two document mismatches"></div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">5</span></div>
+</section>
+
+<!-- 6 Capture -->
+<section class="slide">
+  <div class="split">
+    <div class="text">
+      <div class="kicker">Capture</div>
+      <h2>WhatsApp → CRM in one review.</h2>
+      <ul class="points">
+        <li>2 screenshots → <strong>19 messages</strong>, summary, key points, budget, family, EC eligibility hints</li>
+        <li>Dated follow-ups for every promise: “Send floor plans by Tue 20 Oct”, “Viewing Sat 24 Oct”</li>
+        <li>Finds the existing customer (phone/name match) or proposes a new one</li>
+        <li><strong>Agent confirms before anything is saved</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="shot"><div class="bar"><i></i><i></i><i></i><span>Import from screenshots</span></div><img src="img/whatsapp-review-crop.png" alt="WhatsApp import review"></div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">6</span></div>
+</section>
+
+<!-- 7 Match & care -->
+<section class="slide">
+  <div class="split">
+    <div class="text">
+      <div class="kicker">Match &amp; care</div>
+      <h2>From first match to a client for life.</h2>
+      <ul class="points">
+        <li>AI matches budget, area, bedrooms and EC eligibility to the project catalog, <strong>with reasons</strong></li>
+        <li>Builds the client's circle — spouse, children, advisors — <strong>only with recorded consent</strong>; withdrawal deletes it</li>
+        <li>After-sales: find a tenant, furnishing, tenancy follow-up, rental-income &amp; property-tax filing</li>
+        <li>Company research with <strong>Gemini + Google Search grounding</strong>, saved with sources (company-level only)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="collage">
+    <div class="card" style="left:0; top:0; width:560px"><img src="img/goh-family-crop.png" alt="Family and dates"></div>
+    <div class="card" style="left:580px; top:0; width:380px"><img src="img/wong-matches.png" alt="Matched projects"></div>
+    <div class="card" style="left:0; top:484px; width:960px"><img src="img/goh-aftersales-crop.png" alt="After-sales services"></div>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">7</span></div>
+</section>
+
+<!-- 8 Reminders -->
+<section class="slide">
+  <div class="split">
+    <div class="text">
+      <div class="kicker">Reminders</div>
+      <h2>One list for everything.</h2>
+      <ul class="kinds">
+        <li><i style="background:#15212b"></i>Agent's own reminders</li>
+        <li><i style="background:#0e6e66"></i>AI-suggested follow-ups</li>
+        <li><i style="background:#b42318"></i>Legal deal deadlines</li>
+        <li><i style="background:#c2417a"></i>Birthdays &amp; anniversaries</li>
+        <li><i style="background:#2f6fb0"></i>Lease renewals</li>
+        <li><i style="background:#6b4fbb"></i>Tax deadlines</li>
+      </ul>
+      <div class="wish"><b>“Send wishes”</b> → Copilot drafts a warm, non-salesy message.</div>
+    </div>
+  </div>
+  <div class="shot"><div class="bar"><i></i><i></i><i></i><span>Reminders</span></div><img src="img/reminders-crop.png" alt="Reminders list"></div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">8</span></div>
+</section>
+
+<!-- 9 Agent -->
+<section class="slide">
+  <div class="kicker">The Copilot agent</div>
+  <h2>Built with the Agent Development Kit.</h2>
+  <div class="agent-grid">
+    <ul class="points">
+      <li><strong>ADK (TypeScript)</strong> — one LlmAgent with 10 tools</li>
+      <li>Facts only from tools; <strong>stamp duty computed in code</strong> (IRAS 2023 rates), never by the model</li>
+      <li>Knows what you're looking at — deal or customer — and streams answers</li>
+      <li>Refuses to reveal full NRIC numbers</li>
+    </ul>
+    <div class="toolmap">
+      <div class="core"><div class="t">LlmAgent</div><div class="s">Gemini on Vertex AI</div></div>
+      <div class="tools-lab">10 tools covering</div>
+      <div class="chips">
+        <span class="chip">Deals</span><span class="chip">Deadlines</span><span class="chip">Stamp duty</span><span class="chip">Follow-ups</span><span class="chip">Project search</span><span class="chip">Customers</span><span class="chip">Reminders</span><span class="chip">After-sales</span>
+      </div>
+      <div class="rule">The model reasons and writes; amounts, dates and checks come from tools and code.</div>
+    </div>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">9</span></div>
+</section>
+
+<!-- 10 Architecture -->
+<section class="slide">
+  <div class="kicker">Architecture</div>
+  <h2>One API on Cloud Run, Gemini at the centre.</h2>
+  <svg class="arch" width="1680" height="620" viewBox="0 0 1680 620" font-family="Instrument Sans, sans-serif">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0e6e66"/></marker>
+    </defs>
+    <rect x="370" y="0" width="1310" height="620" rx="26" fill="#e4e9e6" stroke="#c9d3cf" stroke-dasharray="8 8"/>
+    <text x="400" y="44" font-size="22" fill="#44525f" font-weight="600">Google Cloud</text>
+
+    <rect x="0" y="225" width="300" height="190" rx="20" fill="#fff" stroke="#d6ddda"/>
+    <text x="28" y="284" font-size="34" font-family="Newsreader, serif" fill="#15212b">PWA (React)</text>
+    <text x="28" y="326" font-size="22" fill="#44525f">Phone or desktop.</text>
+    <text x="28" y="360" font-size="22" fill="#44525f">Installable; offline shell</text>
+    <text x="28" y="390" font-size="22" fill="#44525f">caches no customer data</text>
+    <line x1="300" y1="320" x2="414" y2="320" stroke="#0e6e66" stroke-width="3" marker-end="url(#ah)"/>
+
+    <rect x="418" y="240" width="300" height="160" rx="20" fill="#0e6e66"/>
+    <text x="448" y="310" font-size="38" font-family="Newsreader, serif" fill="#fff">Cloud Run</text>
+    <text x="448" y="352" font-size="24" fill="#dcece8">Hono API</text>
+
+    <path d="M718 320 H 780 M780 80 V 550" stroke="#0e6e66" stroke-width="3" fill="none"/>
+    <g stroke="#0e6e66" stroke-width="3">
+      <line x1="780" y1="80" x2="836" y2="80" marker-end="url(#ah)"/>
+      <line x1="780" y1="210" x2="836" y2="210" marker-end="url(#ah)"/>
+      <line x1="780" y1="330" x2="836" y2="330" marker-end="url(#ah)"/>
+      <line x1="780" y1="440" x2="836" y2="440" marker-end="url(#ah)"/>
+      <line x1="780" y1="550" x2="836" y2="550" marker-end="url(#ah)"/>
+      <line x1="1032" y1="124" x2="1032" y2="166" marker-start="url(#ah)" marker-end="url(#ah)"/>
+    </g>
+    <g font-size="28" font-weight="600" fill="#15212b">
+      <rect x="840" y="40" width="384" height="80" rx="16" fill="#fff" stroke="#d6ddda"/>
+      <text x="866" y="90">ADK agent</text>
+      <rect x="840" y="170" width="384" height="80" rx="16" fill="#fff" stroke="#0e6e66" stroke-width="2.5"/>
+      <text x="866" y="220">Gemini (Vertex AI)</text>
+      <rect x="840" y="290" width="384" height="80" rx="16" fill="#fff" stroke="#d6ddda"/>
+      <text x="866" y="340">Document AI</text>
+      <rect x="840" y="400" width="384" height="80" rx="16" fill="#fff" stroke="#d6ddda"/>
+      <text x="866" y="450">Google Search grounding</text>
+      <rect x="840" y="510" width="384" height="80" rx="16" fill="#fff" stroke="#d6ddda"/>
+      <text x="866" y="560">Firestore</text>
+    </g>
+    <g font-size="23" fill="#44525f">
+      <text x="1256" y="76">Copilot agent, 10 tools,</text>
+      <text x="1256" y="104">reasoning with Gemini</text>
+      <text x="1256" y="192">Reasoning, structured extraction,</text>
+      <text x="1256" y="220">follow-up plans, project matching,</text>
+      <text x="1256" y="248">eval judge</text>
+      <text x="1256" y="326">OCR → Gemini →</text>
+      <text x="1256" y="354">rule-based cross-checks</text>
+      <text x="1256" y="436">Company research</text>
+      <text x="1256" y="464">with citations</text>
+      <text x="1256" y="546">Deals, customers, notes, reminders,</text>
+      <text x="1256" y="574">people, dates, services</text>
+    </g>
+  </svg>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">10</span></div>
+</section>
+
+<!-- 11 Responsible -->
+<section class="slide">
+  <div class="kicker">Responsible by design, and measured</div>
+  <h2>Trust is part of the product.</h2>
+  <div class="resp">
+    <dl>
+      <dt>PDPA</dt><dd>Consent before storing anyone's circle; NRIC masking; images not stored; data minimisation</dd>
+      <dt>Human in the loop</dt><dd>Every AI import is reviewed; stage changes need the agent</dd>
+      <dt>Grounded</dt><dd>Dates, amounts and checks come from documents, code and tools</dd>
+    </dl>
+    <div class="eval">
+      <div class="score">7/7<span>pass</span></div>
+      <p>End-to-end agent cases, scored on tool use + Gemini judge</p>
+      <ul>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Priorities</li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Stamp duty</li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Mismatch-first</li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>NRIC refusal</li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>After-sales</li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Drafting</li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e6e66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Project catalog</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">11</span></div>
+</section>
+
+<!-- 12 Impact -->
+<section class="slide">
+  <div class="kicker">Impact &amp; what's next</div>
+  <h2>Close on time. Keep every client.</h2>
+  <div class="impact">
+    <div>
+      <h3>Impact for an agent</h3>
+      <p class="lead">Fewer missed legal deadlines, document errors caught before signing, follow-ups never lost in chat, and relationships that turn into referrals and repeat purchases.</p>
+    </div>
+    <div>
+      <h3>Next</h3>
+      <ul class="next">
+        <li>WhatsApp Business API instead of screenshots</li>
+        <li>Google Calendar sync</li>
+        <li>Team and agency dashboards</li>
+        <li>Resale and HDB flows</li>
+        <li>Voice notes after viewings (Gemini Live)</li>
+        <li>Agent Engine deployment</li>
+      </ul>
+    </div>
+  </div>
+  <div class="links">
+    <b>Live demo</b><a href="https://closing-copilot-898383619830.asia-southeast1.run.app">closing-copilot-898383619830.asia-southeast1.run.app</a>
+    <b>Video</b><span>{{VIDEO_URL}}</span>
+  </div>
+  <div class="foot"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closing Copilot<span class="num">12</span></div>
+</section>
+
+</body>
+</html>
