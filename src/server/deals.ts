@@ -9,7 +9,7 @@ import { maskId } from './domain/identity.js';
 import { buildStages, completedMap, currentStage, riskOf, summarize, STAGE_DEFS } from './domain/stages.js';
 import { calcStampDuty } from './domain/stamp-duty.js';
 import { expectedTopDate, getProject } from './projects.js';
-import { store, toPublicCustomer, type StoredCustomer } from './store.js';
+import { store, toPublicCustomer, withCrmDefaults, type StoredCustomer } from './store.js';
 
 export class NotFound extends Error {}
 export class BadRequest extends Error {}
@@ -38,6 +38,7 @@ export async function getDetail(id: string): Promise<DealDetail> {
 }
 
 export interface BookingInput {
+    customerId: string | null;
     file: { mimeType: string; data: Buffer; fileName: string };
     projectId: string | null;
     project: string;
@@ -57,8 +58,12 @@ export async function createBooking(input: BookingInput): Promise<DealDetail> {
     if (!id.isIdentityDocument || !id.idNumber || !id.fullName) {
         throw new BadRequest('Could not read an NRIC, FIN or passport from that file. Try a clearer photo.');
     }
+    // Book an existing CRM customer (keeping their notes and preferences) or create a new one.
+    const existing = input.customerId ? await store.getCustomer(input.customerId) : null;
+    if (input.customerId && !existing) throw new NotFound(`Customer ${input.customerId} not found`);
+    const base = existing ?? withCrmDefaults({ id: randomUUID(), fullName: id.fullName, source: 'Booking' });
     const customer: StoredCustomer = {
-        id: randomUUID(),
+        ...base,
         fullName: id.fullName,
         idType: id.idType ?? 'NRIC',
         idNumber: id.idNumber,
@@ -66,12 +71,13 @@ export async function createBooking(input: BookingInput): Promise<DealDetail> {
         dateOfBirth: id.dateOfBirth,
         nationality: id.nationality,
         sex: id.sex,
-        address: id.address,
+        address: id.address ?? base.address,
         residency: input.residency,
-        phone: input.phone,
-        email: input.email,
-        preferredLanguage: 'English',
-        profile: { purpose: input.purpose, propertiesOwned: input.propertiesOwned, household: input.household },
+        phone: input.phone ?? base.phone,
+        email: input.email ?? base.email,
+        profile: { purpose: input.purpose, propertiesOwned: input.propertiesOwned, household: input.household ?? base.profile.household },
+        status: 'BOOKED',
+        updatedAt: new Date().toISOString(),
     };
     const today = todaySg();
     const catalog = getProject(input.projectId);
@@ -160,7 +166,10 @@ export async function dealContext(dealId: string) {
             documents: deal.documents.map((d) => ({ type: d.type, fileName: d.fileName, summary: d.summary, checks: d.checks })),
         },
         project: getProject(deal.projectId),
-        stampDuty: calcStampDuty(deal.price, customer.residency, customer.profile.propertiesOwned),
+        stampDuty:
+            customer.residency && customer.profile.propertiesOwned !== null
+                ? calcStampDuty(deal.price, customer.residency, customer.profile.propertiesOwned)
+                : null,
     };
 }
 

@@ -13,10 +13,13 @@ export async function generateJson<T extends z.ZodType>(opts: {
     schema: T;
     prompt: string;
     file?: { mimeType: string; data: Buffer };
+    files?: Array<{ mimeType: string; data: Buffer }>;
     system?: string;
 }): Promise<z.infer<T>> {
     const parts: Part[] = [];
-    if (opts.file) parts.push({ inlineData: { mimeType: opts.file.mimeType, data: opts.file.data.toString('base64') } });
+    for (const f of [...(opts.file ? [opts.file] : []), ...(opts.files ?? [])]) {
+        parts.push({ inlineData: { mimeType: f.mimeType, data: f.data.toString('base64') } });
+    }
     parts.push({ text: opts.prompt });
     const res = await ai().models.generateContent({
         model: config.model,

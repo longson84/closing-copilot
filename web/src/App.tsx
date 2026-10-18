@@ -6,6 +6,10 @@ import { DealPage } from './pages/DealPage';
 import { NewBooking } from './pages/NewBooking';
 import { Pipeline } from './pages/Pipeline';
 import { Projects } from './pages/Projects';
+import { CustomerPage } from './pages/CustomerPage';
+import { Customers, NewCustomer } from './pages/Customers';
+import { Reminders, useReminderBadge } from './pages/Reminders';
+import { WhatsAppImport } from './pages/WhatsAppImport';
 import { DESKTOP, PHONE, useInstall, useMedia, useOnline } from './pwa';
 import { useRoute } from './router';
 
@@ -19,6 +23,10 @@ export function App() {
   const online = useOnline();
   const { canInstall, install, iosHint, dismissIosHint } = useInstall();
   const dealId = route.name === 'deal' ? route.id : undefined;
+  const customerId = route.name === 'customer' ? route.id : undefined;
+  const remBadge = useReminderBadge(route.name);
+  const inCustomers = route.name === 'customers' || route.name === 'customer' || route.name === 'customer-new' || route.name === 'whatsapp';
+  const badge = remBadge > 0 && <span className="nav-badge">{remBadge}</span>;
 
   useEffect(() => {
     if (isDesktop) setCopilotOpen(true);
@@ -27,7 +35,7 @@ export function App() {
   // Close the overlay copilot when navigating on small screens.
   useEffect(() => {
     if (!window.matchMedia(DESKTOP).matches && !window.location.hash.includes('copilot')) setCopilotOpen(false);
-  }, [route.name, dealId]);
+  }, [route.name, dealId, route.name === 'customer' ? route.id : '']);
 
   // Lock page scroll behind the phone sheet.
   useEffect(() => {
@@ -53,18 +61,28 @@ export function App() {
           <a className={route.name === 'pipeline' || route.name === 'deal' ? 'active' : ''} href="#/" title="Pipeline">
             <Icon name="pipeline" /> <span className="nav-text">Pipeline</span>
           </a>
-          <a className={route.name === 'new' ? 'active' : ''} href="#/new" title="New booking">
-            <Icon name="plus" /> <span className="nav-text">New booking</span>
+          <a className={inCustomers ? 'active' : ''} href="#/customers" title="Customers">
+            <Icon name="user" /> <span className="nav-text">Customers</span>
+          </a>
+          <a className={route.name === 'reminders' ? 'active' : ''} href="#/reminders" title="Reminders">
+            <span className="nav-icon">
+              <Icon name="clock" />
+              {badge}
+            </span>{' '}
+            <span className="nav-text">Reminders</span>
           </a>
           <a className={route.name === 'projects' ? 'active' : ''} href="#/projects" title="Projects">
             <Icon name="building" /> <span className="nav-text">Projects</span>
           </a>
+          <a className={route.name === 'new' ? 'active' : ''} href="#/new" title="New booking">
+            <Icon name="plus" /> <span className="nav-text">New booking</span>
+          </a>
         </nav>
         {installButton && <div className="sidebar-install">{installButton}</div>}
         <div className="sidebar-foot">
-          <span className="avatar">RO</span>
+          <span className="avatar">RL</span>
           <span className="nav-text">
-            <strong>Rachel Ong</strong>
+            <strong>Rachel Lim</strong>
             <small>Sales agent</small>
           </span>
         </div>
@@ -92,6 +110,11 @@ export function App() {
         {route.name === 'pipeline' && <Pipeline />}
         {route.name === 'new' && <NewBooking />}
         {route.name === 'projects' && <Projects />}
+        {route.name === 'customers' && <Customers />}
+        {route.name === 'customer-new' && <NewCustomer />}
+        {route.name === 'customer' && <CustomerPage key={route.id} id={route.id} highlightNote={route.note} initialTab={route.tab} />}
+        {route.name === 'whatsapp' && <WhatsAppImport key={route.customerId ?? 'none'} customerId={route.customerId} />}
+        {route.name === 'reminders' && <Reminders />}
         {route.name === 'deal' && <DealPage key={route.id} id={route.id} review={route.review} />}
       </main>
 
@@ -101,7 +124,7 @@ export function App() {
         </button>
       )}
       {copilotOpen && !isDesktop && !isPhone && <div className="copilot-scrim" onClick={() => setCopilotOpen(false)} />}
-      <CopilotPanel open={copilotOpen} onClose={() => setCopilotOpen(false)} dealId={dealId} />
+      <CopilotPanel open={copilotOpen} onClose={() => setCopilotOpen(false)} dealId={dealId} customerId={customerId} />
 
       {iosHint && !copilotOpen && (
         <div className="ios-hint" role="note">
@@ -118,13 +141,20 @@ export function App() {
       )}
 
       <nav className="tabbar" aria-label="Main">
-        <a className={(route.name === 'pipeline' || route.name === 'deal') && !copilotOpen ? 'active' : ''} href="#/" onClick={() => setCopilotOpen(false)}>
+        <a className={(route.name === 'pipeline' || route.name === 'deal' || route.name === 'new') && !copilotOpen ? 'active' : ''} href="#/" onClick={() => setCopilotOpen(false)}>
           <Icon name="pipeline" size={20} />
           <span>Pipeline</span>
         </a>
-        <a className={route.name === 'new' && !copilotOpen ? 'active' : ''} href="#/new" onClick={() => setCopilotOpen(false)}>
-          <Icon name="plus" size={20} />
-          <span>New booking</span>
+        <a className={inCustomers && !copilotOpen ? 'active' : ''} href="#/customers" onClick={() => setCopilotOpen(false)}>
+          <Icon name="user" size={20} />
+          <span>Customers</span>
+        </a>
+        <a className={route.name === 'reminders' && !copilotOpen ? 'active' : ''} href="#/reminders" onClick={() => setCopilotOpen(false)}>
+          <span className="nav-icon">
+            <Icon name="clock" size={20} />
+            {badge}
+          </span>
+          <span>Reminders</span>
         </a>
         <a className={route.name === 'projects' && !copilotOpen ? 'active' : ''} href="#/projects" onClick={() => setCopilotOpen(false)}>
           <Icon name="building" size={20} />

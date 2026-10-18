@@ -15,9 +15,9 @@ import type {
 } from '../../src/shared/types';
 import { daysBetween, todayISO } from './format';
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-function addDays(iso: string, n: number): string {
+export function addDays(iso: string, n: number): string {
   const d = new Date(`${iso}T00:00:00`);
   d.setDate(d.getDate() + n);
   const p = (x: number) => String(x).padStart(2, '0');
@@ -73,7 +73,16 @@ function cust(
   residency: Customer['residency'],
   extra: Partial<Customer> & { profile: Customer['profile'] },
 ): Customer {
+  const now = new Date().toISOString();
   return {
+    status: 'BOOKED',
+    source: null,
+    budgetMinSgd: null,
+    budgetMaxSgd: null,
+    preferences: { segments: [], areas: [], bedrooms: [], executiveCondo: null, timeline: null, notes: null },
+    tags: [],
+    createdAt: now,
+    updatedAt: now,
     id,
     fullName,
     idType: residency === 'FOREIGNER' ? 'PASSPORT' : residency === 'SPR' ? 'FIN' : 'NRIC',
@@ -90,7 +99,7 @@ function cust(
   };
 }
 
-const customers: Record<string, Customer> = {
+export const customers: Record<string, Customer> = {
   c1: cust('c1', 'Tan Wei Ming', 'S****567D', 'SC', {
     dateOfBirth: '1986-04-12',
     nationality: 'Singapore Citizen',
@@ -151,7 +160,7 @@ function idDoc(name: string, masked: string, uploadedAt: string): DealDocument {
 
 // MOCK catalog for VITE_MOCK=1 only. Figures are rough placeholders, not verified market data;
 // the real catalog comes from GET /api/projects.
-const MOCK_PROJECTS: Project[] = [
+export const MOCK_PROJECTS: Project[] = [
   {
     id: 'aurelia-bay-residences',
     name: 'Aurelia Bay Residences',
@@ -202,7 +211,7 @@ function makeDeal(
   return {
     id,
     customerId,
-    agentName: 'Rachel Ong',
+    agentName: 'Rachel Lim',
     project,
     projectId: projectIdFor(project),
     unit,
@@ -216,7 +225,7 @@ function makeDeal(
   };
 }
 
-const deals: Deal[] = [
+export const deals: Deal[] = [
   makeDeal('d-1001', 'c1', 'Lentor Hills Residences', '#12-05', 1_688_000, -24, { BOOKING: 0, CDD: 1, SPA_DELIVERED: 10 }, [
     idDoc('TAN WEI MING', 'S****567D', addDays(T, -24) + 'T10:12:00+08:00'),
     {
@@ -265,7 +274,7 @@ const deals: Deal[] = [
   makeDeal('d-1005', 'c5', 'Tembusu Grand', '#16-01', 2_430_000, -120, { BOOKING: 0, CDD: 1, SPA_DELIVERED: 12, SPA_EXERCISED: 25, STAMP_DUTY: 33, DOWNPAYMENT_15: 52, KEYS: 118 }, []),
 ];
 
-function summary(d: Deal): DealSummary {
+export function summary(d: Deal): DealSummary {
   const r = riskOf(d);
   const stage = d.stages.find((s) => s.key === d.currentStage)!;
   return {
@@ -371,9 +380,13 @@ export async function uploadDocument(id: string, file: File): Promise<{ deal: De
 export async function createBooking(form: FormData): Promise<DealDetail> {
   await sleep(3200);
   const id = `d-${1000 + deals.length + 1}`;
-  const cid = `c${Object.keys(customers).length + 1}`;
+  const existing = form.get('customerId') as string | null;
+  const cid = existing && customers[existing] ? existing : `c${Object.keys(customers).length + 1}`;
   const residency = (form.get('residency') as Customer['residency']) || 'SC';
-  customers[cid] = cust(cid, 'Chen Mei Ling', 'S****204F', residency, {
+  if (existing && customers[existing]) {
+    const c = customers[existing];
+    Object.assign(c, { status: 'BOOKED', residency, idType: 'NRIC', idNumberMasked: c.idNumberMasked ?? 'S****204F' });
+  } else customers[cid] = cust(cid, 'Chen Mei Ling', 'S****204F', residency, {
     dateOfBirth: '1988-02-14',
     nationality: residency === 'FOREIGNER' ? 'Malaysian' : 'Singapore Citizen',
     sex: 'F',
@@ -393,7 +406,7 @@ export async function createBooking(form: FormData): Promise<DealDetail> {
   const deal: Deal = {
     id,
     customerId: cid,
-    agentName: 'Rachel Ong',
+    agentName: 'Rachel Lim',
     project:
       MOCK_PROJECTS.find((p) => p.id === form.get('projectId'))?.name ?? ((form.get('project') as string) || 'Untitled project'),
     projectId: MOCK_PROJECTS.some((p) => p.id === form.get('projectId')) ? (form.get('projectId') as string) : null,

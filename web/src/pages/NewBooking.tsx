@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import type { Project, Purpose, Residency } from '../../../src/shared/types';
-import { createBooking, listProjects } from '../api';
+import type { Customer, Project, Purpose, Residency } from '../../../src/shared/types';
+import { createBooking, getCustomer, listProjects } from '../api';
 import { ProjectCard } from '../components/ProjectCard';
 import { ProjectPicker, type ProjectChoice } from '../components/ProjectPicker';
 import { AiProgress, Dropzone, ErrorNote, Icon } from '../components/ui';
@@ -38,6 +38,22 @@ export function NewBooking() {
   const [household, setHousehold] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [forCustomer, setForCustomer] = useState<Customer | null>(null);
+  useEffect(() => {
+    const cid = new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('customer');
+    if (!cid) return;
+    getCustomer(cid)
+      .then(({ customer: c }) => {
+        setForCustomer(c);
+        if (c.residency) setResidency(c.residency);
+        if (c.profile.purpose) setPurpose(c.profile.purpose);
+        if (c.profile.propertiesOwned !== null) setPropertiesOwned(String(c.profile.propertiesOwned));
+        if (c.profile.household) setHousehold(c.profile.household);
+        if (c.phone) setPhone(c.phone);
+        if (c.email) setEmail(c.email);
+      })
+      .catch(() => undefined);
+  }, []);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
@@ -58,6 +74,7 @@ export function NewBooking() {
     if (!valid || !file) return;
     const fd = new FormData();
     fd.append('file', file);
+    if (forCustomer) fd.append('customerId', forCustomer.id);
     if (selected) fd.append('projectId', selected.id);
     fd.append('project', projectName);
     fd.append('unit', unit.trim());
@@ -107,6 +124,15 @@ export function NewBooking() {
 
       {error && <ErrorNote message={`Couldn't create the booking: ${error}`} />}
 
+      {forCustomer && (
+        <div className="review-banner">
+          <Icon name="user" size={18} />
+          <div>
+            <strong>Booking for {forCustomer.fullName}</strong>
+            <p>Profile details are filled in from their customer file. The ID document is still needed for CDD.</p>
+          </div>
+        </div>
+      )}
       <form className="booking" onSubmit={submit} noValidate>
         <section className="card">
           <div className="card-head">
@@ -235,7 +261,7 @@ export function NewBooking() {
   );
 }
 
-function Segmented<T extends string>({
+export function Segmented<T extends string>({
   value,
   onChange,
   options,

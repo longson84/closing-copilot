@@ -4,7 +4,12 @@ export type Route =
   | { name: 'pipeline' }
   | { name: 'deal'; id: string; review: boolean }
   | { name: 'new' }
-  | { name: 'projects' };
+  | { name: 'projects' }
+  | { name: 'customers' }
+  | { name: 'customer-new' }
+  | { name: 'customer'; id: string; note: string | null; tab: string | null }
+  | { name: 'whatsapp'; customerId: string | null }
+  | { name: 'reminders' };
 
 function parse(hash: string): Route {
   const h = hash.replace(/^#/, '') || '/';
@@ -13,6 +18,13 @@ function parse(hash: string): Route {
   if (m) return { name: 'deal', id: decodeURIComponent(m[1]), review: new URLSearchParams(query).has('review') };
   if (path === '/new') return { name: 'new' };
   if (path === '/projects') return { name: 'projects' };
+  const qs = new URLSearchParams(query);
+  if (path === '/customers') return { name: 'customers' };
+  if (path === '/customers/new') return { name: 'customer-new' };
+  const c = path.match(/^\/customers\/([^/]+)$/);
+  if (c) return { name: 'customer', id: decodeURIComponent(c[1]), note: qs.get('note'), tab: qs.get('tab') };
+  if (path === '/whatsapp') return { name: 'whatsapp', customerId: qs.get('customer') };
+  if (path === '/reminders') return { name: 'reminders' };
   return { name: 'pipeline' };
 }
 
@@ -26,6 +38,7 @@ export function useRoute(): Route {
     const on = () => {
       setRoute(parse(window.location.hash));
       document.querySelector('.main')?.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0 });
     };
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);

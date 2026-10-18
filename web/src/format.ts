@@ -1,4 +1,4 @@
-import type { DocType, Purpose, Residency, Risk, StageKey } from '../../src/shared/types';
+import type { CustomerStatus, DocType, NoteKind, Purpose, Residency, Risk, StageKey } from '../../src/shared/types';
 
 export const formatSGD = (n: number) =>
   `${n < 0 ? '-' : ''}S$${Math.abs(n).toLocaleString('en-SG', { maximumFractionDigits: 0 })}`;
@@ -99,6 +99,9 @@ const toolLabels: Record<string, string> = {
   draft_customer_message: 'Drafting message',
   suggest_followups: 'Planning follow-ups',
   search_projects: 'Searching projects',
+  find_customers: 'Finding customers',
+  get_customer: 'Reading customer file',
+  list_reminders: 'Checking reminders',
   advance_stage: 'Updating stage',
   check_stage_document: 'Cross-checking document',
   extract_identity_document: 'Reading ID document',
@@ -127,4 +130,59 @@ export function formatValue(key: string, v: string | number | null): string {
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return formatDate(v);
   return v;
+}
+
+export const statusLabel: Record<CustomerStatus, string> = {
+  LEAD: 'Lead',
+  PROSPECT: 'Prospect',
+  BOOKED: 'Booked',
+  AFTER_SALES: 'After-sales',
+  LOST: 'Lost',
+};
+
+export const noteKindLabel: Record<NoteKind, string> = {
+  DISCUSSION: 'Discussion',
+  THOUGHT: 'My thoughts',
+  PLAN: 'Plan',
+};
+
+/** Compact SGD for budgets: 1850000 -> "S$1.85M", 950000 -> "S$950k". */
+export function formatSGDShort(n: number): string {
+  if (n >= 1_000_000) return `S$${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 2).replace(/0$/, '')}M`;
+  if (n >= 1_000) return `S$${Math.round(n / 1_000)}k`;
+  return `S$${n}`;
+}
+
+export function formatBudget(min: number | null, max: number | null): string {
+  if (min !== null && max !== null) return `${formatSGDShort(min)} – ${formatSGDShort(max)}`;
+  if (max !== null) return `Up to ${formatSGDShort(max)}`;
+  if (min !== null) return `From ${formatSGDShort(min)}`;
+  return '—';
+}
+
+export function addDaysISO(iso: string, n: number): string {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  const p = (x: number) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** "Today", "Yesterday", "3 days ago", or a date. */
+export function relativeDay(iso: string | null): string {
+  if (!iso) return '—';
+  const d = daysBetween(iso.slice(0, 10), todayISO());
+  if (d === 0) return 'Today';
+  if (d === 1) return 'Yesterday';
+  if (d > 1 && d < 7) return `${d} days ago`;
+  if (d === -1) return 'Tomorrow';
+  return formatDateShort(iso.slice(0, 10));
+}
+
+export function dueLabel(iso: string): string {
+  const d = daysBetween(todayISO(), iso);
+  if (d < 0) return `${-d}d overdue`;
+  if (d === 0) return 'Today';
+  if (d === 1) return 'Tomorrow';
+  if (d < 7) return `In ${d} days`;
+  return formatDateShort(iso);
 }

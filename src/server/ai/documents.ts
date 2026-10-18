@@ -94,7 +94,7 @@ function crossCheck(x: Extracted, deal: Deal, customer: StoredCustomer): DocChec
     } else if (x.docType === 'OTP' || x.docType === 'SPA') {
         checks.push({ field: 'purchaserName', status: 'MISSING', message: 'No purchaser name found on the document.' });
     }
-    if (x.purchaserIdNumber) {
+    if (x.purchaserIdNumber && customer.idNumber) {
         const ok = normalizeId(x.purchaserIdNumber) === normalizeId(customer.idNumber);
         checks.push(
             check(

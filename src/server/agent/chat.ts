@@ -9,7 +9,7 @@ const USER = 'agent';
 const sessions = new InMemorySessionService();
 const runner = new Runner({ appName: APP, agent: rootAgent, sessionService: sessions });
 
-export async function* chat(input: { sessionId: string; message: string; dealId?: string; signal: AbortSignal }): AsyncGenerator<ChatEvent> {
+export async function* chat(input: { sessionId: string; message: string; dealId?: string; customerId?: string; signal: AbortSignal }): AsyncGenerator<ChatEvent> {
     const existing = await sessions.getSession({ appName: APP, userId: USER, sessionId: input.sessionId });
     if (!existing) await sessions.createSession({ appName: APP, userId: USER, sessionId: input.sessionId });
 
@@ -17,7 +17,7 @@ export async function* chat(input: { sessionId: string; message: string; dealId?
         userId: USER,
         sessionId: input.sessionId,
         newMessage: { role: 'user', parts: [{ text: input.message }] },
-        stateDelta: { current_deal_id: input.dealId ?? null },
+        stateDelta: { current_deal_id: input.dealId ?? null, current_customer_id: input.customerId ?? null },
         runConfig: { streamingMode: StreamingMode.SSE },
         abortSignal: input.signal,
     })) {

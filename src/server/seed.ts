@@ -8,12 +8,12 @@ import { maskId } from './domain/identity.js';
 import { buildStages, currentStage } from './domain/stages.js';
 import { logger } from './logger.js';
 import { expectedTopDate, findProjectByName } from './projects.js';
-import { store } from './store.js';
+import { store, withCrmDefaults } from './store.js';
 
 const SEED_FILE = 'demo-docs/seed.json';
 
 interface SeedEntry {
-    customer: Omit<Customer, 'id' | 'idNumberMasked' | 'preferredLanguage'> & { idNumber: string };
+    customer: Pick<Customer, 'fullName' | 'idType' | 'dateOfBirth' | 'nationality' | 'sex' | 'address' | 'residency' | 'phone' | 'email' | 'profile'> & { idNumber: string };
     deal: {
         project: string;
         unit: string;
@@ -28,12 +28,18 @@ export async function seedIfEmpty(): Promise<void> {
     const entries = JSON.parse(readFileSync(SEED_FILE, 'utf8')) as SeedEntry[];
     for (const e of entries) {
         const customerId = randomUUID();
-        await store.saveCustomer({
-            ...e.customer,
-            id: customerId,
-            idNumberMasked: maskId(e.customer.idNumber),
-            preferredLanguage: 'English',
-        });
+        const createdAt = new Date(`${e.deal.otpDate}T10:00:00+08:00`).toISOString();
+        await store.saveCustomer(
+            withCrmDefaults({
+                ...e.customer,
+                id: customerId,
+                idNumberMasked: maskId(e.customer.idNumber),
+                status: e.deal.completed.KEYS ? 'AFTER_SALES' : 'BOOKED',
+                source: 'Showflat walk-in',
+                createdAt,
+                updatedAt: createdAt,
+            }),
+        );
         const project = findProjectByName(e.deal.project);
         const stages = buildStages(e.deal.otpDate, e.deal.completed, expectedTopDate(project));
         const deal: Deal = {

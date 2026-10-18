@@ -88,7 +88,6 @@ export function DealPage({ id, review }: { id: string; review: boolean }) {
   const { deal, customer, risk } = data;
   const docs = [...deal.documents].sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
   const mismatches = deal.documents.flatMap((d) => d.checks.filter((c) => c.status === 'MISMATCH').map((c) => ({ d, c })));
-  const idDoc = deal.documents.find((d) => d.type === 'IDENTITY');
   const proj = deal.projectId ? catalog.find((p) => p.id === deal.projectId) : undefined;
   const projFacts = proj
     ? [
@@ -219,25 +218,33 @@ export function DealPage({ id, review }: { id: string; review: boolean }) {
           <section className={`card${showReview ? ' highlight' : ''}`}>
             <div className="card-head">
               <h2>Buyer</h2>
-              {idDoc && <span className="card-hint">From {idDoc.fileName}</span>}
+              <a className="card-link" href={`#/customers/${customer.id}`}>
+                Open customer file
+              </a>
             </div>
             <dl className="kv">
-              <div>
-                <dt>{customer.idType}</dt>
-                <dd className="tabular">{customer.idNumberMasked}</dd>
-              </div>
+              {customer.idNumberMasked && (
+                <div>
+                  <dt>{customer.idType ?? 'ID'}</dt>
+                  <dd className="tabular">{customer.idNumberMasked}</dd>
+                </div>
+              )}
               <div>
                 <dt>Residency</dt>
-                <dd>{residencyLabel[customer.residency]}</dd>
+                <dd>{customer.residency ? residencyLabel[customer.residency] : '—'}</dd>
               </div>
               <div>
                 <dt>Purpose</dt>
-                <dd>{purposeLabel[customer.profile.purpose]}</dd>
+                <dd>{customer.profile.purpose ? purposeLabel[customer.profile.purpose] : '—'}</dd>
               </div>
               <div>
                 <dt>Properties owned</dt>
                 <dd>
-                  {customer.profile.propertiesOwned === 0 ? 'None (first property)' : customer.profile.propertiesOwned}
+                  {customer.profile.propertiesOwned === null
+                    ? '—'
+                    : customer.profile.propertiesOwned === 0
+                      ? 'None (first property)'
+                      : customer.profile.propertiesOwned}
                 </dd>
               </div>
               <div className="wide">

@@ -18,9 +18,25 @@ const DEAL_SUGGESTIONS = [
   'Calculate stamp duty for this buyer',
   'Draft a reminder to the buyer',
 ];
+const CUSTOMER_SUGGESTIONS = [
+  'Summarise this customer for me',
+  'What should I do next with them?',
+  'Which projects fit them best?',
+  'Draft a WhatsApp follow-up',
+];
 const GLOBAL_SUGGESTIONS = ['What do I need to do today?', 'Which deals are at risk this week?', 'Which documents have problems?'];
 
-export function CopilotPanel({ open, onClose, dealId }: { open: boolean; onClose: () => void; dealId?: string }) {
+export function CopilotPanel({
+  open,
+  onClose,
+  dealId,
+  customerId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  dealId?: string;
+  customerId?: string;
+}) {
   const [sessionId] = useState(() => crypto.randomUUID());
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
@@ -50,7 +66,7 @@ export function CopilotPanel({ open, onClose, dealId }: { open: boolean; onClose
     const ctrl = new AbortController();
     abort.current = ctrl;
     try {
-      for await (const ev of streamChat({ sessionId, message, ...(dealId ? { dealId } : {}) }, ctrl.signal)) {
+      for await (const ev of streamChat({ sessionId, message, ...(dealId ? { dealId } : {}), ...(customerId ? { customerId } : {}) }, ctrl.signal)) {
         if (ev.type === 'text') update((m) => ({ ...m, text: m.text + ev.text }));
         else if (ev.type === 'tool') update((m) => ({ ...m, tools: [...m.tools, ev.name] }));
         else if (ev.type === 'error') update((m) => ({ ...m, error: ev.message }));
@@ -73,7 +89,7 @@ export function CopilotPanel({ open, onClose, dealId }: { open: boolean; onClose
           </span>
           Copilot
         </span>
-        <span className="copilot-context">{dealId ? 'Looking at this deal' : 'All deals'}</span>
+        <span className="copilot-context">{dealId ? 'Looking at this deal' : customerId ? 'Looking at this customer' : 'All deals'}</span>
         <button className="icon-btn" onClick={onClose} aria-label="Close copilot">
           <Icon name="close" />
         </button>
@@ -133,7 +149,7 @@ export function CopilotPanel({ open, onClose, dealId }: { open: boolean; onClose
 
       <div className="copilot-foot">
         <div className="suggestions">
-          {(dealId ? DEAL_SUGGESTIONS : GLOBAL_SUGGESTIONS).map((s) => (
+          {(dealId ? DEAL_SUGGESTIONS : customerId ? CUSTOMER_SUGGESTIONS : GLOBAL_SUGGESTIONS).map((s) => (
             <button key={s} className="chip" onClick={() => send(s)} disabled={busy}>
               {s}
             </button>
@@ -149,7 +165,7 @@ export function CopilotPanel({ open, onClose, dealId }: { open: boolean; onClose
           <textarea
             value={input}
             rows={1}
-            placeholder={dealId ? 'Ask about this deal…' : 'Ask about your pipeline…'}
+            placeholder={dealId ? 'Ask about this deal…' : customerId ? 'Ask about this customer…' : 'Ask about your pipeline…'}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
