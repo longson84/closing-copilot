@@ -1,0 +1,206 @@
+[
+  {
+    "customer": {
+      "fullName": "LEE JUN HAO",
+      "idType": "NRIC",
+      "idNumber": "S8531462I",
+      "dateOfBirth": "1985-06-21",
+      "nationality": "Singapore",
+      "sex": "M",
+      "address": "Blk 210 Fictional Rise #05-33, Singapore 650210",
+      "residency": "SC",
+      "phone": "+65 8123 4471",
+      "email": "lee.junhao@example.com",
+      "profile": {
+        "purpose": "OWN_STAY",
+        "propertiesOwned": 0,
+        "household": "Married, 1 child"
+      }
+    },
+    "deal": {
+      "project": "Aurelia Bay Residences",
+      "unit": "#08-03",
+      "price": 1420000,
+      "otpDate": "2026-09-11",
+      "completed": {
+        "BOOKING": "2026-09-11",
+        "CDD": "2026-09-11",
+        "SPA_DELIVERED": "2026-09-25",
+        "SPA_EXERCISED": null,
+        "STAMP_DUTY": null,
+        "DOWNPAYMENT_15": null,
+        "KEYS": null
+      }
+    }
+  },
+  {
+    "customer": {
+      "fullName": "PRIYA NAIR D/O RAMESH",
+      "idType": "NRIC",
+      "idNumber": "S9047218F",
+      "dateOfBirth": "1990-02-08",
+      "nationality": "Singapore",
+      "sex": "F",
+      "address": "88 Example Grove #11-04, Singapore 438888",
+      "residency": "SC",
+      "phone": "+65 8264 1907",
+      "email": "priya.nair@example.com",
+      "profile": {
+        "purpose": "OWN_STAY",
+        "propertiesOwned": 0,
+        "household": "Single"
+      }
+    },
+    "deal": {
+      "project": "Aurelia Bay Residences",
+      "unit": "#15-11",
+      "price": 1180000,
+      "otpDate": "2026-09-08",
+      "completed": {
+        "BOOKING": "2026-09-08",
+        "CDD": "2026-09-08",
+        "SPA_DELIVERED": "2026-09-21",
+        "SPA_EXERCISED": "2026-10-09",
+        "STAMP_DUTY": null,
+        "DOWNPAYMENT_15": null,
+        "KEYS": null
+      }
+    }
+  },
+  {
+    "customer": {
+      "fullName": "MUHAMMAD HAFIZ BIN ISMAIL",
+      "idType": "NRIC",
+      "idNumber": "S9418350B",
+      "dateOfBirth": "1994-11-30",
+      "nationality": "Singapore",
+      "sex": "M",
+      "address": "Blk 45 Sample Street 2 #03-118, Singapore 520045",
+      "residency": "SC",
+      "phone": "+65 8735 2280",
+      "email": "hafiz.ismail@example.com",
+      "profile": {
+        "purpose": "OWN_STAY",
+        "propertiesOwned": 0,
+        "household": "Married, no children"
+      }
+    },
+    "deal": {
+      "project": "Aurelia Bay Residences",
+      "unit": "#05-02",
+      "price": 1150000,
+      "otpDate": "2026-10-12",
+      "completed": {
+        "BOOKING": "2026-10-12",
+        "CDD": "2026-10-12",
+        "SPA_DELIVERED": null,
+        "SPA_EXERCISED": null,
+        "STAMP_DUTY": null,
+        "DOWNPAYMENT_15": null,
+        "KEYS": null
+      }
+    }
+  },
+  {
+    "customer": {
+      "fullName": "CHEN XIAOLING",
+      "idType": "NRIC",
+      "idNumber": "S8762904Z",
+      "dateOfBirth": "1987-04-17",
+      "nationality": "China",
+      "sex": "F",
+      "address": "21 Placeholder Walk #07-02, Singapore 597621",
+      "residency": "SPR",
+      "phone": "+65 8490 6613",
+      "email": "chen.xiaoling@example.com",
+      "profile": {
+        "purpose": "OWN_STAY",
+        "propertiesOwned": 0,
+        "household": "Married, 2 children"
+      }
+    },
+    "deal": {
+      "project": "Aurelia Bay Residences",
+      "unit": "#20-08",
+      "price": 2050000,
+      "otpDate": "2026-10-01",
+      "completed": {
+        "BOOKING": "2026-10-01",
+        "CDD": "2026-10-01",
+        "SPA_DELIVERED": "2026-10-09",
+        "SPA_EXERCISED": null,
+        "STAMP_DUTY": null,
+        "DOWNPAYMENT_15": null,
+        "KEYS": null
+      }
+    }
+  },
+  {
+    "customer": {
+      "fullName": "JAMES ARTHUR WHITFIELD",
+      "idType": "FIN",
+      "idNumber": "G7341285X",
+      "dateOfBirth": "1981-09-03",
+      "nationality": "United Kingdom",
+      "sex": "M",
+      "address": "5 Mock Hill Road #14-01, Singapore 248555",
+      "residency": "FOREIGNER",
+      "phone": "+65 8817 3054",
+      "email": "james.whitfield@example.com",
+      "profile": {
+        "purpose": "INVESTMENT",
+        "propertiesOwned": 1,
+        "household": "Married, 2 children"
+      }
+    },
+    "deal": {
+      "project": "Aurelia Bay Residences",
+      "unit": "#18-01",
+      "price": 3280000,
+      "otpDate": "2026-09-03",
+      "completed": {
+        "BOOKING": "2026-09-03",
+        "CDD": "2026-09-03",
+        "SPA_DELIVERED": "2026-09-14",
+        "SPA_EXERCISED": "2026-09-28",
+        "STAMP_DUTY": "2026-10-06",
+        "DOWNPAYMENT_15": null,
+        "KEYS": null
+      }
+    }
+  },
+  {
+    "customer": {
+      "fullName": "GOH BOON KIAT",
+      "idType": "NRIC",
+      "idNumber": "S7925836I",
+      "dateOfBirth": "1979-12-12",
+      "nationality": "Singapore",
+      "sex": "M",
+      "address": "7 Kingsmere Lane #03-07, Singapore 279876",
+      "residency": "SC",
+      "phone": "+65 8352 9146",
+      "email": "goh.boonkiat@example.com",
+      "profile": {
+        "purpose": "OWN_STAY",
+        "propertiesOwned": 0,
+        "household": "Married, 3 children"
+      }
+    },
+    "deal": {
+      "project": "Kingsmere Park",
+      "unit": "#03-07",
+      "price": 2260000,
+      "otpDate": "2022-11-10",
+      "completed": {
+        "BOOKING": "2022-11-10",
+        "CDD": "2022-11-10",
+        "SPA_DELIVERED": "2022-11-18",
+        "SPA_EXERCISED": "2022-12-05",
+        "STAMP_DUTY": "2022-12-12",
+        "DOWNPAYMENT_15": "2023-01-02",
+        "KEYS": "2025-11-20"
+      }
+    }
+  }
+]
