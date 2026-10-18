@@ -1,5 +1,6 @@
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { streamSSE } from 'hono/streaming';
 import { z } from 'zod';
 import type { StageKey } from '../shared/types.js';
@@ -41,6 +42,11 @@ app.onError((err, c) => {
     logger.error({ err: String(err), path: c.req.path }, 'request failed');
     return c.json({ error: 'Something went wrong' }, 500);
 });
+
+// Enforced while streaming, before the body is buffered or parsed: uploads get room for one file, everything else 64 KB.
+const uploadLimit = bodyLimit({ maxSize: MAX_UPLOAD + 1024 * 1024, onError: (c) => c.json({ error: 'File is larger than 15 MB.' }, 413) });
+const jsonLimit = bodyLimit({ maxSize: 64 * 1024, onError: (c) => c.json({ error: 'Request too large' }, 413) });
+app.use('/api/*', (c, next) => (/^\/api\/(bookings|deals\/[^/]+\/documents)$/.test(c.req.path) ? uploadLimit(c, next) : jsonLimit(c, next)));
 
 app.get('/api/health', (c) => c.json({ ok: true, today: todaySg() }));
 

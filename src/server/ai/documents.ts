@@ -7,7 +7,7 @@ import { z } from 'zod';
 import type { DealDocument, DocCheck, DocType, StageKey } from '../../shared/types.js';
 import type { Deal } from '../../shared/types.js';
 import { diffDays } from '../domain/dates.js';
-import { firstDifference, maskId, normalizeId, normalizeName } from '../domain/identity.js';
+import { maskId, normalizeId, normalizeName } from '../domain/identity.js';
 import type { StoredCustomer } from '../store.js';
 import { ocr } from './docai.js';
 import { generateJson } from './gemini.js';
@@ -101,7 +101,7 @@ function crossCheck(x: Extracted, deal: Deal, customer: StoredCustomer): DocChec
                 'purchaserIdNumber',
                 ok,
                 `Matches the verified ${customer.idType} (${customer.idNumberMasked}).`,
-                `ID number on the document does not match the verified ${customer.idType} ${customer.idNumberMasked} (first difference at character ${firstDifference(x.purchaserIdNumber, customer.idNumber)}).`,
+                `ID number on the document does not match the verified ${customer.idType} ${customer.idNumberMasked}. Ask the solicitor to re-check it against the buyer's ${customer.idType}.`,
             ),
         );
     }

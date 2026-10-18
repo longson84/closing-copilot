@@ -22,10 +22,3 @@ export function normalizeName(raw: string): string {
     return raw.toUpperCase().replace(/[^A-Z ]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-/** Position (1-based) of the first differing character, for a mismatch message that leaks nothing. */
-export function firstDifference(a: string, b: string): number {
-    const x = normalizeId(a);
-    const y = normalizeId(b);
-    for (let i = 0; i < Math.max(x.length, y.length); i++) if (x[i] !== y[i]) return i + 1;
-    return 0;
-}
