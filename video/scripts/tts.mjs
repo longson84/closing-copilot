@@ -1,14 +1,15 @@
-// Usage: node tts.mjs <speakingRate>  -> build/audio/sN.wav + durations.json
-import { readFileSync, writeFileSync } from 'node:fs';
+// Usage: node tts.mjs <speakingRate> [narration.json] [outDir]  -> <outDir>/<id>.wav + durations.json
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
-const out = join(here, '..', 'build', 'audio');
+const out = process.argv[4] ?? join(here, '..', 'build', 'audio');
+mkdirSync(out, { recursive: true });
 const rate = Number(process.argv[2] || '1.0');
 const voice = process.env.VOICE || 'en-US-Chirp3-HD-Charon';
 const token = execSync('gcloud auth print-access-token', { env: { ...process.env, CLOUDSDK_ACTIVE_CONFIG_NAME: 'pzy' } }).toString().trim();
-const scenes = JSON.parse(readFileSync(join(here, 'narration.json'), 'utf8'));
+const scenes = JSON.parse(readFileSync(process.argv[3] ?? join(here, 'narration.json'), 'utf8'));
 const durations = {};
 for (const s of scenes) {
   const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {

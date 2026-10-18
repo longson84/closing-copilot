@@ -267,7 +267,19 @@ const SCENES = {
     const fresh = page.locator('.doc-list > *').first();
     await h.reveal(fresh, 'center');
     await h.moveTo(fresh, { dy: 0.2, steps: 30 });
-    await h.wait(3500);
+    await h.wait(1800);
+    const replaced = page.locator('.doc-list > *', { hasText: 'Replaced' }).first();
+    if (await replaced.count()) {
+      await h.reveal(replaced, 'center');
+      await h.moveTo(replaced, { dy: 0.3, steps: 30 });
+      await h.wait(1500);
+    }
+    // back to the top: the red alert is gone
+    await page.locator('.main').evaluate((el) => { el.scrollTo({ top: 0, behavior: 'smooth' }); document.scrollingElement.scrollTo({ top: 0, behavior: 'smooth' }); });
+    await h.wait(1200);
+    await h.moveTo(page.locator('.main h1').first(), { steps: 30 });
+    h.mark('clean');
+    await h.wait(2500);
   },
 
   // S4 · WhatsApp screenshots -> new customer -> AI project matches

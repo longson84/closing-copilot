@@ -605,12 +605,79 @@ Resolve relative dates ("next Saturday", "Tuesday", "Yesterday") against today, 
 - services: after-sales help for a property the contact ALREADY OWNS or has bought, that they asked for or clearly need: RENTAL (find a tenant: askingRentSgd, availableFrom), FURNISHING (budgetSgd, scope), TENANCY (tenantName, monthlyRentSgd, leaseStart, leaseEnd), TAX (rental income or property tax filing: taxYear = Year of Assessment, taxType), DEFECTS, REFINANCING (home-loan switch/repricing), OTHER. Do NOT include buying-stage tasks such as stamp duty or ABSD calculations, viewings or price lists. Return an empty list when there is none.`,
     });
     const [out, people, dated] = await Promise.all([chatCall, peopleCall, datesCall]);
-    const circle = { ...people, ...dated };
-    return {
+    return fitForCommit({
         ...out,
-        ...circle,
-        services: circle.services.map((sv) => ({ ...sv, details: Object.fromEntries(Object.entries(sv.details).filter(([, v]) => v !== null)) })),
+        ...people,
+        ...dated,
+        services: dated.services.map((sv) => ({ ...sv, details: Object.fromEntries(Object.entries(sv.details).filter(([, v]) => v !== null)) })),
         candidates: rankCandidates(await store.listCustomers(), out.contactName, out.contactPhone),
+    });
+}
+
+/**
+ * Model output is free-form; the commit endpoint validates strictly. Normalise here so whatever
+ * the reader produced can always be saved: valid dates or null, https URLs, bounded lengths.
+ */
+function fitForCommit(a: WhatsAppAnalysis): WhatsAppAnalysis {
+    const cut = (v: string | null, n: number) => (v === null ? null : v.slice(0, n));
+    const day = (v: string | null) => (v && DATE.test(v) ? v : null);
+    const bday = (v: string | null) => (v && isValidDate(v) ? v : null);
+    const money = (v: number | null) => (v !== null && v >= 0 && v <= 1e9 ? v : null);
+    const url = (u: string) => {
+        const withScheme = /^https?:\/\//i.test(u) ? u : `https://${u.replace(/^\/+/, '')}`;
+        try {
+            return new URL(withScheme).toString().slice(0, 300);
+        } catch {
+            return null;
+        }
+    };
+    const f = a.facts;
+    return {
+        ...a,
+        contactName: cut(a.contactName, 120),
+        contactPhone: cut(a.contactPhone, 40),
+        occurredAt: day(a.occurredAt),
+        transcript: a.transcript.slice(0, 300).map((m) => ({ ...m, time: cut(m.time, 40), text: m.text.slice(0, 4000) })),
+        summary: a.summary.slice(0, 4000),
+        keyPoints: a.keyPoints.slice(0, 20).map((k) => k.slice(0, 500)),
+        facts: {
+            ...f,
+            propertiesOwned: f.propertiesOwned !== null && f.propertiesOwned <= 50 ? f.propertiesOwned : null,
+            household: cut(f.household, 300),
+            budgetMinSgd: money(f.budgetMinSgd),
+            budgetMaxSgd: money(f.budgetMaxSgd),
+            areas: f.areas.slice(0, 20).map((x) => x.slice(0, 60)),
+            bedrooms: f.bedrooms.slice(0, 10).map((x) => x.slice(0, 20)),
+            segments: [...new Set(f.segments)].slice(0, 3),
+            timeline: cut(f.timeline, 200),
+        },
+        suggestedReminders: a.suggestedReminders.slice(0, 10).map((r) => ({ ...r, title: r.title.slice(0, 200), detail: cut(r.detail, 2000) })),
+        customerUpdates: { company: cut(a.customerUpdates.company, 120), jobTitle: cut(a.customerUpdates.jobTitle, 120), birthday: bday(a.customerUpdates.birthday) },
+        socialProfiles: a.socialProfiles.flatMap((sp) => {
+            const u = url(sp.url);
+            return u ? [{ platform: sp.platform, url: u }] : [];
+        }).slice(0, 6),
+        people: a.people.slice(0, 15).map((p) => ({
+            ...p,
+            name: p.name.slice(0, 120),
+            relationLabel: cut(p.relationLabel, 60),
+            birthday: bday(p.birthday),
+            company: cut(p.company, 120),
+            jobTitle: cut(p.jobTitle, 120),
+            school: cut(p.school, 120),
+            phone: cut(p.phone, 40),
+            notes: cut(p.notes, 2000),
+        })),
+        importantDates: a.importantDates
+            .filter((d) => isValidDate(d.date) && (d.yearly || !d.date.startsWith('--')))
+            .slice(0, 15)
+            .map((d) => ({ ...d, label: d.label.slice(0, 160), personName: cut(d.personName, 120) })),
+        services: a.services.slice(0, 6).map((sv) => ({
+            ...sv,
+            title: sv.title.slice(0, 160),
+            notes: cut(sv.notes, 4000),
+            details: Object.fromEntries(Object.entries(sv.details).slice(0, 30).map(([k, v]) => [k.slice(0, 40), typeof v === 'string' ? v.slice(0, 500) : v])),
+        })),
     };
 }
 

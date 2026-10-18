@@ -1,0 +1,56 @@
+1
+00:00:00,400 --> 00:00:04,234
+Between viewings, the agent opens Closing Copilot on their phone —
+
+2
+00:00:04,274 --> 00:00:06,405
+today's overdue deal is right on top,
+
+3
+00:00:06,445 --> 00:00:08,870
+with every legal deadline on one timeline.
+
+4
+00:00:09,660 --> 00:00:13,376
+One tap, and Copilot drafts a WhatsApp-ready reminder for the buyer,
+
+5
+00:00:13,416 --> 00:00:15,530
+using the real deadlines from the deal.
+
+6
+00:00:20,228 --> 00:00:23,865
+Joanne's birthday is next week — Copilot writes the wishes,
+
+7
+00:00:23,905 --> 00:00:24,738
+ready to send.
+
+8
+00:00:27,115 --> 00:00:30,998
+After a chat, two screenshots become a new customer: facts,
+
+9
+00:00:31,038 --> 00:00:32,859
+family and dated follow-ups,
+
+10
+00:00:32,899 --> 00:00:35,186
+saved only when the agent confirms.
+
+11
+00:00:43,360 --> 00:00:46,463
+And a booking starts with a photo of the buyer's NRIC.
+
+12
+00:00:46,503 --> 00:00:49,431
+The deal is created in seconds, with the ID masked.
+
+13
+00:00:55,146 --> 00:00:57,729
+Closing Copilot — works in your pocket.
+
+14
+00:00:57,769 --> 00:01:00,016
+Installable on iPhone and Android.
+

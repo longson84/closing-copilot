@@ -18,42 +18,50 @@ const XF = 0.4; // crossfade seconds
 const AUD = JSON.parse(readFileSync(join(B, 'audio', 'durations.json'), 'utf8')).durations;
 const TEXT = Object.fromEntries(JSON.parse(readFileSync(join(here, 'narration.json'), 'utf8')).map((x) => [x.id, x.text]));
 const ff = (args) => execFileSync('ffmpeg', ['-v', 'error', '-y', ...args], { stdio: 'inherit' });
-const marksOf = (s) => JSON.parse(readFileSync(join(RAW, `${s}.json`), 'utf8'));
+// Playwright's video timeline runs slightly slower than wall-clock (~9% here), linearly; rescale the
+// wall-clock marks onto video time using the clip's real duration.
+const marksOf = (s) => {
+  const m = JSON.parse(readFileSync(join(RAW, `${s}.json`), 'utf8'));
+  const vd = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', join(RAW, `${s}.webm`)]).toString());
+  const k = vd / m.end;
+  return Object.fromEntries(Object.entries(m).map(([key, t]) => [key, t * k]));
+};
 
 // Scene plans. cut: [fromMark, offset, toMark, offset]; zones: [fromMark, toMark, speed]
 // narr: [clip, anchorMark, offsetSeconds(in edited time)]; caps: [caption, anchorMark, offset, duration]
 const PLANS = {
-  s1: { speed: 1.0, cuts: [], zones: [], narr: [['s1', 'ready', 0.3]], caps: [] },
+  s1: { speed: 1.05, cuts: [], zones: [], narr: [['s1', 'ready', 0.3]], caps: [] },
   s2: {
-    speed: 1.15,
+    speed: 1.25,
     cuts: [['ai_start', 1.4, 'ai_end', -0.2]],
     zones: [['form_start', 'form_end', 1.9]],
     narr: [['s2a', 'ready', 0.3], ['s2b', 'ai_start', 0.0]],
     caps: [['docai', 'ai_start', 0.2, 3.4]],
   },
   s3: {
-    speed: 1.1,
+    speed: 1.2,
     cuts: [['ai_start', 1.4, 'ai_end', -0.2], ['ai2_start', 1.2, 'ai2_end', -0.2]],
     zones: [['hold_end', 'ai2_start', 1.4]],
+    hold: 1.0,
     narr: [['s3a', 'ready', 0.3], ['s3b', 'ai_end', 0.2]],
     caps: [['mismatch', 'ai_end', 0.6, 3.6]],
   },
   s4: {
-    speed: 1.15,
+    speed: 1.25,
     cuts: [['ai_start', 1.4, 'ai_end', -0.2], ['ai2_start', 1.4, 'ai2_end', -0.2]],
     zones: [['ai_end', 'pre_save', 1.35]],
     narr: [['s4a', 'ready', 0.3], ['s4b', 'pre_save', -0.4], ['s4c', 'ai2_start', -1.0]],
     caps: [['confirm', 'pre_save', -0.2, 3.2]],
   },
   s5: {
-    speed: 1.1,
+    speed: 1.2,
     cuts: [['ai_start', 1.4, 'ai_text', -0.6]],
     zones: [],
     narr: [['s5a', 'ready', 0.3], ['s5b', 'reminders', 0.0]],
     caps: [['pdpa', 'family', 2.0, 3.6]],
   },
   s6: {
-    speed: 1.15,
+    speed: 1.25,
     cuts: [['ai_tool', 2.0, 'ai_text', -1.2]],
     zones: [['ready', 'ai_start', 1.3]],
     narr: [['s6', 'ready', 0.3]],
@@ -115,7 +123,7 @@ for (const [name, plan] of Object.entries(PLANS)) {
   const m = marksOf(name);
   const { pieces, map, total } = buildPieces(m, plan);
   const narr = placeNarr(plan.narr, m, map);
-  const D = Math.max(total, narr[narr.length - 1].end + 0.9);
+  const D = Math.max(total + (plan.hold ?? 0), narr[narr.length - 1].end + 0.9);
   const n = pieces.length;
   let f = `[0:v]split=${n}${pieces.map((_, i) => `[p${i}]`).join('')};`;
   pieces.forEach((p, i) => (f += `[p${i}]trim=start=${p.a.toFixed(3)}:end=${p.b.toFixed(3)},setpts=(PTS-STARTPTS)/${p.s}[q${i}];`));

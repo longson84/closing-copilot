@@ -19,114 +19,114 @@ Miss one, and the buyer can lose a quarter of their booking fee.
 Today that lives in spreadsheets and WhatsApp.
 
 6
-00:00:21,223 --> 00:00:23,752
+00:00:21,457 --> 00:00:23,986
 Closing Copilot is built on Google Cloud.
 
 7
-00:00:23,792 --> 00:00:27,573
+00:00:24,026 --> 00:00:27,807
 The agent snaps the buyer's NRIC — even a tilted phone photo.
 
 8
-00:00:33,144 --> 00:00:39,743
+00:00:34,169 --> 00:00:40,768
 Document AI reads it, Gemini structures it, and the customer record is created with the ID masked everywhere.
 
 9
-00:00:39,783 --> 00:00:43,215
+00:00:40,808 --> 00:00:44,240
 Due-diligence is recorded, and the image is never stored.
 
 10
-00:00:44,305 --> 00:00:49,735
+00:00:45,330 --> 00:00:50,760
 When the developer's lawyer sends the Sale & Purchase Agreement, Copilot cross-checks it against the verified buyer.
 
 11
-00:00:50,275 --> 00:00:54,906
+00:00:51,300 --> 00:00:55,931
 Here it caught a missing letter in the name and two swapped digits in the NRIC —
 
 12
-00:00:54,946 --> 00:00:56,248
+00:00:55,971 --> 00:00:57,273
 before the buyer signs.
 
 13
-00:00:56,288 --> 00:00:59,985
+00:00:57,313 --> 00:01:01,010
 Gemini reads; plain code compares, so every flag is explainable.
 
 14
-00:01:05,318 --> 00:01:07,392
+00:01:12,472 --> 00:01:14,545
 Most selling happens on WhatsApp.
 
 15
-00:01:07,432 --> 00:01:09,377
+00:01:14,585 --> 00:01:16,530
 The agent screenshots the chat;
 
 16
-00:01:09,417 --> 00:01:11,490
+00:01:16,570 --> 00:01:18,643
 Gemini turns it into a customer —
 
 17
-00:01:11,530 --> 00:01:13,347
+00:01:18,683 --> 00:01:20,500
 budget, family, preferences —
 
 18
-00:01:13,387 --> 00:01:16,229
+00:01:20,540 --> 00:01:23,382
 plus dated follow-ups for every promise made.
 
 19
-00:01:21,668 --> 00:01:24,338
+00:01:29,551 --> 00:01:32,221
 Nothing is saved until the agent confirms.
 
 20
-00:01:27,641 --> 00:01:32,933
+00:01:35,521 --> 00:01:40,812
 Then Copilot matches him against twenty-four real 2025–26 launches:
 
 21
-00:01:32,973 --> 00:01:36,991
+00:01:40,852 --> 00:01:44,871
 an EC in Pasir Ris that fits his family and budget.
 
 22
-00:01:38,081 --> 00:01:40,727
+00:01:45,961 --> 00:01:48,607
 The relationship doesn't end at the keys.
 
 23
-00:01:40,767 --> 00:01:45,247
+00:01:48,647 --> 00:01:53,126
 From a chat and a profile screenshot, Copilot built Mr Goh's circle —
 
 24
-00:01:45,287 --> 00:01:48,391
+00:01:53,166 --> 00:01:56,271
 with his consent, as Singapore's PDPA requires —
 
 25
-00:01:48,431 --> 00:01:50,094
+00:01:56,311 --> 00:01:57,974
 and his after-sales needs:
 
 26
-00:01:50,134 --> 00:01:53,632
+00:01:58,014 --> 00:02:01,511
 finding a tenant, furnishing, declaring rental income.
 
 27
-00:01:54,172 --> 00:02:01,402
+00:02:02,051 --> 00:02:09,281
 Birthdays, anniversaries, lease renewals and tax deadlines land in one reminders list, and Copilot drafts the message.
 
 28
-00:02:02,492 --> 00:02:10,428
+00:02:10,371 --> 00:02:18,308
 And when the agent just asks "what do I need to do today", the ADK agent checks deadlines, reminders and customer files through its tools —
 
 29
-00:02:10,468 --> 00:02:13,757
+00:02:18,348 --> 00:02:21,636
 it never guesses a date, an amount or a stamp-duty figure;
 
 30
-00:02:13,797 --> 00:02:14,962
+00:02:21,676 --> 00:02:22,842
 those come from code.
 
 31
-00:02:20,970 --> 00:02:28,328
+00:02:28,033 --> 00:02:35,392
 Gemini on Vertex AI with the Agent Development Kit, Document AI, Google Search grounding, Firestore and Cloud Run —
 
 32
-00:02:28,368 --> 00:02:31,867
+00:02:35,432 --> 00:02:38,930
 evaluated end to end, seven out of seven cases passing.
 
 33
-00:02:31,907 --> 00:02:37,400
+00:02:38,970 --> 00:02:44,463
 Closing Copilot: fewer missed deadlines, deeper relationships, more time with clients.
 
