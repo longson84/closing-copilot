@@ -78,4 +78,4 @@ Installable PWA; offline shell caches no customer data.
 ## 12. Impact & what's next
 **Impact (for an agent):** fewer missed legal deadlines, document errors caught before signing, follow-ups never lost in chat, and relationships that turn into referrals and repeat purchases.
 **Next:** WhatsApp Business API instead of screenshots · Google Calendar sync · team/agency dashboards · resale & HDB flows · voice notes after viewings (Gemini Live) · Agent Engine deployment.
-Live demo: https://closing-copilot-898383619830.asia-southeast1.run.app · Video: {{VIDEO_URL}}
+Live demo: https://closing-copilot-898383619830.asia-southeast1.run.app · Video: https://youtu.be/B1xBDnm9Te8
